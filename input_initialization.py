@@ -18,10 +18,10 @@ def initialize_input(kind):
 
         for i in range(10):
             for j in range(10):
-                Ux_2[i, j] = [np.random.choice([0,1]), np.random.choice([0,1]), np.random.choice([0,1])]
+                Ux[i, j] = [np.random.choice([0,1]), np.random.choice([0,1]), np.random.choice([0,1])]
 
     else:
-        Ux = np.flip(np.asarray(Image.open(path.join('data', kind + '.jpg')).resize((200, 200))), axis=2)
+        Ux = np.flip(np.asarray(Image.open(path.join('data', kind + '.jpg')).resize((200, 200))), axis=2) / 255
         spectral_stencil = np.array([4400, 5500, 6500])
 
     return Ux, spectral_stencil
