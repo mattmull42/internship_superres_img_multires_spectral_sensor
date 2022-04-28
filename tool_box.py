@@ -3,15 +3,25 @@ import matplotlib.pyplot as plt
 from skimage.metrics import mean_squared_error, structural_similarity
 
 
-def mse_errors(Ux, Ux_hat):
+def mse_errors(Ux, Ux_hat, bgr_channels=None):
+    if bgr_channels:
+        return [mean_squared_error(Ux[:, :, bgr_channels[i]], Ux_hat[:, :, i]) for i in range(3)]
+
     return [mean_squared_error(Ux[:, :, i], Ux_hat[:, :, i]) for i in range(3)]
 
 
-def ssim_errors(Ux, Ux_hat):
+def ssim_errors(Ux, Ux_hat, bgr_channels=None):
+    if bgr_channels:
+        return [structural_similarity(Ux[:, :, bgr_channels[i]], Ux_hat[:, :, i]) for i in range(3)]
+
     return [structural_similarity(Ux[:, :, i], Ux_hat[:, :, i]) for i in range(3)]
 
 
-def plot_images(images_list, titles_list, nrows=1, ncols=None, save_to=None, police_color=None):
+def get_indices_rgb(spectral_stencil):
+    return (np.abs(spectral_stencil - 4450)).argmin(), (np.abs(spectral_stencil - 5500)).argmin(), (np.abs(spectral_stencil - 6500)).argmin()
+
+
+def plot_images(images_list, titles_list, nrows=1, ncols=None, save_to=None, police_color=None, rgb_channels=None):
     n = len(images_list)
 
     if not ncols:
@@ -32,7 +42,11 @@ def plot_images(images_list, titles_list, nrows=1, ncols=None, save_to=None, pol
             plt.imshow(images_list[i], cmap='gray')
 
         else:
-            plt.imshow(np.mean(images_list[i], axis=2), cmap='gray')
+            if rgb_channels:
+                plt.imshow(images_list[i][:, :, rgb_channels])
+
+            else:
+                plt.imshow(np.mean(images_list[i], axis=2), cmap='gray')
         
         plt.title(titles_list[i], color=police_color, fontsize=32)
         plt.xticks(color=police_color, fontsize=24)
