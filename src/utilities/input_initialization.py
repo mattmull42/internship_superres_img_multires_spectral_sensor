@@ -13,11 +13,12 @@ def initialize_input(name):
         spectral_stencil = dataset.variables['spectral stencil'][:]
 
     elif name == 'random':
-        res = np.zeros((10, 10, 3))
+        N_i, N_j = 16, 16
+        res = np.zeros((N_i, N_j, 3))
         spectral_stencil = np.array([6500, 5500, 4450])
 
-        for i in range(10):
-            for j in range(10):
+        for i in range(N_i):
+            for j in range(N_j):
                 res[i, j] = [np.random.choice([0,1]), np.random.choice([0,1]), np.random.choice([0,1])]
 
     else:

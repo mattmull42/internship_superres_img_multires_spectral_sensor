@@ -1,6 +1,7 @@
 from src.forward_class import *
 from src.inverse_class import *
 from src.utilities.input_initialization import *
+from src.utilities.errors import *
 
 
 class Pipeline:
@@ -42,3 +43,30 @@ class Pipeline:
         self.inverse_problem.set_input(self.image_inverse, self.input_name_inverse)
         self.inverse_problem.run()
         self.inverse_problem.save_results()
+
+        self.get_errors()
+
+        self.save_results()
+
+
+    def get_errors(self):
+        self.mse_errors = self.get_mse_errors()
+        self.ssim_errors = self.get_ssim_errors()
+        self.image_abs_difference = self.get_image_abs_difference()
+
+
+    def get_mse_errors(self):
+        return mse_errors(self.image_forward, self.inverse_problem.output, rgb_channels=get_indices_rgb(self.spectral_stencil))
+
+
+    def get_ssim_errors(self):
+        return ssim_errors(self.image_forward, self.inverse_problem.output, rgb_channels=get_indices_rgb(self.spectral_stencil))
+
+
+    def get_image_abs_difference(self):
+        return image_abs_diff(self.image_forward, self.inverse_problem.output, rgb_channels=get_indices_rgb(self.spectral_stencil))
+    
+
+    def save_results(self):
+        create_output_dirs()
+        plt.imsave(path.join('output', 'errors_outputs', self.input_name_inverse[:-4] + '_absolute_difference.png'), self.image_abs_difference, cmap='gray')
