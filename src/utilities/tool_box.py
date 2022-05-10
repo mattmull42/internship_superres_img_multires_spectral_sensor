@@ -13,11 +13,11 @@ def same_size_images(image_1, image_2, ignore_depth=False):
     return image_1.shape == image_2.shape
 
 
-def check_init_parameters(cfa, binning):
-    if cfa not in ['bayer', 'quad_bayer']:
+def check_init_parameters(cfa=None, binning=None):
+    if cfa and cfa not in ['bayer', 'quad_bayer']:
             raise Exception('cfa must be bayer, quad_bayer.')
     
-    if not isinstance(binning, bool):
+    if binning and not isinstance(binning, bool):
         raise Exception('binning must be a boolean.')
 
 

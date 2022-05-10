@@ -3,9 +3,9 @@
 import sys
 from os import listdir
 import csv
+from tqdm import tqdm
 
 from src.pipeline_class import *
-from src.utilities.plots import *
 
 
 def main(argv):
@@ -25,7 +25,7 @@ def main(argv):
         csvwriter = csv.writer(errors_log)
         csvwriter.writerow(['Name', 'MSE red error', 'MSE green error', 'MSE blue error', 'SSIM red error', 'SSIM green error', 'SSIM blue error'])
 
-        for input_name in input_names:
+        for input_name in tqdm(input_names, desc='Processed input :'):
             pipeline_bayer.run(input_name)
             pipeline_quad.run(input_name)
             pipeline_binning.run(input_name)
