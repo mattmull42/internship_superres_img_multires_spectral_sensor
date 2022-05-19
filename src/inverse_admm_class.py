@@ -58,7 +58,6 @@ class Inverse_problem_ADMM:
         output_dir = path.join('output', 'inverse_problem_ADMM_outputs')
         input_name_without_extension = path.basename(path.splitext(input_name)[0])
 
-        print('Problems :', np.min(self.output), np.sum(self.output < 0), np.max(self.output), np.sum(self.output > 1))
         for i in range(self.output_size[0]):
             for j in range(self.output_size[1]):
                 for k in range(self.output_size[2]):
