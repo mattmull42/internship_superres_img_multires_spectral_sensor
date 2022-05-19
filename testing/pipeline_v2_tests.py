@@ -6,14 +6,14 @@ from datetime import datetime
 from src.pipeline_v2_class import *
 
 
-def run_pipeline_v2_tests(input_names):
+def run_pipeline_v2_tests(input_names, niter):
     print(Fore.YELLOW + '###################### Beginning of the pipeline V2 tests ######################')
 
     create_output_dirs()
 
-    pipeline_bayer = Pipeline_v2('bayer', False)
-    pipeline_quad = Pipeline_v2('quad_bayer', False)
-    pipeline_binning = Pipeline_v2('quad_bayer', True)
+    pipeline_bayer = Pipeline_v2('bayer', False, niter)
+    pipeline_quad = Pipeline_v2('quad_bayer', False, niter)
+    pipeline_binning = Pipeline_v2('quad_bayer', True, niter)
 
     with open(path.join('output', 'errors_log.csv'), 'a') as errors_log:
         csvwriter = csv.writer(errors_log)
