@@ -23,11 +23,11 @@ class Inverse_problem:
         if len(self.input.shape) != 2:
             raise Exception('Input must be a 2 dimensional matrix.')
 
-        if not self.binning:
-            self.output_size = np.append(self.input.shape, 3)
-
         if self.binning:
             self.apply_upscaling()
+
+        else:
+            self.output_size = np.append(self.input.shape, 3)
 
         if self.cfa == 'bayer':
             self.apply_bayer_sparse()

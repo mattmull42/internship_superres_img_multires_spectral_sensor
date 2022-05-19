@@ -26,7 +26,7 @@ def run_pipeline_v1_tests(input_names):
 
             mse_bayer = pipeline_bayer.mse_errors
             ssim_bayer = pipeline_bayer.ssim_errors
-            csvwriter.writerow([datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 'Pipeline V1', input_name[:-4] + '_bayer', np.mean(mse_bayer), np.mean(ssim_bayer)] + mse_bayer + ssim_bayer)
+            csvwriter.writerow([datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 'Pipeline V1', input_name[:-4] + '_bayer', f'{duration:.2f}', np.mean(mse_bayer), np.mean(ssim_bayer)] + mse_bayer + ssim_bayer)
             
             start = time()
             pipeline_quad.run(input_name)
@@ -35,7 +35,7 @@ def run_pipeline_v1_tests(input_names):
 
             mse_quad = pipeline_quad.mse_errors
             ssim_quad = pipeline_quad.ssim_errors
-            csvwriter.writerow([datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 'Pipeline V1', input_name[:-4] + '_quad_bayer', np.mean(mse_quad), np.mean(ssim_quad)] + mse_quad + ssim_quad)
+            csvwriter.writerow([datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 'Pipeline V1', input_name[:-4] + '_quad_bayer', f'{duration:.2f}', np.mean(mse_quad), np.mean(ssim_quad)] + mse_quad + ssim_quad)
 
             start = time()
             pipeline_binning.run(input_name)
@@ -44,7 +44,7 @@ def run_pipeline_v1_tests(input_names):
 
             mse_binning = pipeline_binning.mse_errors
             ssim_binning = pipeline_binning.ssim_errors
-            csvwriter.writerow([datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 'Pipeline V1', input_name[:-4] + '_quad_bayer_binning', np.mean(mse_binning), np.mean(ssim_binning)] + mse_binning + ssim_binning)
+            csvwriter.writerow([datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 'Pipeline V1', input_name[:-4] + '_quad_bayer_binning', f'{duration:.2f}', np.mean(mse_binning), np.mean(ssim_binning)] + mse_binning + ssim_binning)
 
             csvwriter.writerow([])
 

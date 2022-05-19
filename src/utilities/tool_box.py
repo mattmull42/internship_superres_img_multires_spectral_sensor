@@ -32,7 +32,7 @@ def create_output_dirs():
     if not path.isfile(path.join('output', 'errors_log.csv')):
         with open(path.join('output', 'errors_log.csv'), 'w') as errors_log:
             csvwriter = csv.writer(errors_log)
-            csvwriter.writerow(['Date', 'Pipeline version', 'Name', 'MSE mean', 'SSIM mean', 'MSE red error', 'MSE green error', 'MSE blue error', 'SSIM red error', 'SSIM green error', 'SSIM blue error'])
+            csvwriter.writerow(['Date', 'Pipeline', 'Name', 'Elapsed time (s)', 'MSE mean', 'SSIM mean', 'MSE red error', 'MSE green error', 'MSE blue error', 'SSIM red error', 'SSIM green error', 'SSIM blue error'])
 
     if not path.isdir(path.join('output', 'forward_model_outputs')):
         mkdir(path.join('output', 'forward_model_outputs'))

@@ -19,7 +19,7 @@ def main(argv):
 
     run_pipeline_v1_tests(input_names)
 
-    run_pipeline_v2_tests(input_names, 300)
+    run_pipeline_v2_tests(input_names, 100)
 
 
 if __name__ == "__main__":
