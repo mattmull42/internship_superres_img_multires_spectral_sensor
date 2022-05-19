@@ -1,10 +1,10 @@
-from src.forward_operator import *
+from src.forward_operator_class import *
 from src.inverse_class import *
 from src.utilities.input_initialization import *
 from src.utilities.errors import *
 
 
-class Pipeline:
+class Pipeline_v1:
     def __init__(self, cfa, binning):
         check_init_parameters(cfa=cfa, binning=binning)
 
@@ -15,9 +15,9 @@ class Pipeline:
     def run(self, input_name):
         self.input_name_forward = input_name
         self.image_forward, self.spectral_stencil = initialize_input(self.input_name_forward)
-        self.N_i, self.N_j, self.N_k = self.image_forward.shape
+        self.input_size = self.image_forward.shape
 
-        self.forward_model = Forward_operator(self.cfa, self.N_i, self.N_j, self.N_k, self.spectral_stencil, self.binning)
+        self.forward_model = Forward_operator(self.cfa, self.input_size, self.spectral_stencil, self.binning)
         self.forward_model(self.image_forward)
         self.forward_model.save_output(input_name)
 
@@ -40,9 +40,8 @@ class Pipeline:
         else:
             self.inverse_problem = Inverse_problem(self.cfa, self.binning)
 
-        self.inverse_problem.set_input(self.image_inverse, self.input_name_inverse)
-        self.inverse_problem.run()
-        self.inverse_problem.save_output()
+        self.inverse_problem(self.image_inverse)
+        self.inverse_problem.save_output(self.input_name_inverse)
 
         self.get_errors()
 
