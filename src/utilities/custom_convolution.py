@@ -20,7 +20,9 @@ def varying_kernel_convolution(M, K_list):
 
     for i in range(N_i):
         for j in range(N_j):
-            res[i, j] = min(1, max(0, np.sum(extract_padded(M, K_list[4 * (i % 4) + j % 4].shape[0], i, j) * K_list[4 * (i % 4) + j % 4])))
+            res[i, j] = np.sum(extract_padded(M, K_list[4 * (i % 4) + j % 4].shape[0], i, j) * K_list[4 * (i % 4) + j % 4])
+
+    np.clip(res, 0, 1, res)
 
     return res
 

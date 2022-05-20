@@ -39,18 +39,15 @@ class cfa_operator(odl.Operator):
 
         for i in range(self.input_size[0]):
             for j in range(self.input_size[1]):
-                for k in range(self.input_size[2]):
-                    if k == self.k_r:
-                        if i % 2 == 0 and j % 2 == 1:
-                            self.cfa_mask[i + self.input_size[0] * j, k] = 1
+                if i % 2 == 0 and j % 2 == 1:
+                    self.cfa_mask[i + self.input_size[0] * j, self.k_r] = 1
 
-                    elif k == self.k_g:
-                        if (i % 2 == 0 and j % 2 == 0) or (i % 2 == 1 and j % 2 == 1):
-                            self.cfa_mask[i + self.input_size[0] * j, k] = 1
+                elif i % 2 == 1 and j % 2 == 0:
+                    self.cfa_mask[i + self.input_size[0] * j, self.k_b] = 1
 
-                    elif k == self.k_b:
-                        if i % 2 == 1 and j % 2 == 0:
-                            self.cfa_mask[i + self.input_size[0] * j, k] = 1
+                else:
+                    self.cfa_mask[i + self.input_size[0] * j, self.k_g] = 1
+
 
 
     def get_quad_mask(self):
@@ -58,18 +55,14 @@ class cfa_operator(odl.Operator):
 
         for i in range(self.input_size[0]):
             for j in range(self.input_size[1]):
-                for k in range(self.input_size[2]):
-                    if k == self.k_r:
-                        if i % 4 < 2 and j % 4 >= 2:
-                            self.cfa_mask[i + self.input_size[0] * j, k] = 1
+                if i % 4 < 2 and j % 4 >= 2:
+                    self.cfa_mask[i + self.input_size[0] * j, self.k_r] = 1
 
-                    elif k == self.k_g:
-                        if (i % 4 < 2 and j % 4 < 2) or (i % 4 >= 2 and j % 4 >= 2):
-                            self.cfa_mask[i + self.input_size[0] * j, k] = 1
+                elif i % 4 >= 2 and j % 4 < 2:
+                    self.cfa_mask[i + self.input_size[0] * j, self.k_b] = 1
 
-                    elif k == self.k_b:
-                        if i % 4 >= 2 and j % 4 < 2:
-                            self.cfa_mask[i + self.input_size[0] * j, k] = 1
+                else:
+                    self.cfa_mask[i + self.input_size[0] * j, self.k_g] = 1
 
 
     def save_output(self, input_name):

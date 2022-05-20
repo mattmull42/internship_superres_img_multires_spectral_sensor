@@ -13,12 +13,7 @@ class TV_adjoint(odl.Operator):
 
 
     def _call(self, UG):
-        UG = UG.asarray()
-        tmp = np.zeros((self.output_size[0] * self.output_size[1], self.output_size[2], 2))
-
-        for i in range(self.output_size[0] * self.output_size[1]):
-            tmp[i, :, :] = increase_dimensions(UG[:, i], (self.output_size[2], 2))
-
+        tmp = increase_dimensions(np.transpose(UG.asarray()), (self.output_size[0] * self.output_size[1], self.output_size[2], 2))
         tmp = np.transpose(increase_dimensions(tmp, np.append(self.output_size, 2)), (3, 0, 1, 2))
         self.output = np.zeros(self.range.shape)
 

@@ -50,7 +50,9 @@ class Inverse_problem_ADMM:
 
         odl.solvers.admm_linearized(self.output, self.f, self.g, self.L, self.tau, self.sigma, self.niter)
 
-        np.clip(self.output.asarray(), 0, 1, self.output)
+        self.output = self.output.asarray()
+
+        np.clip(self.output, 0, 1, self.output)
 
         return self.output
 

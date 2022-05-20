@@ -11,18 +11,13 @@ class TV_operator(odl.Operator):
 
 
     def _call(self, Ux):
-        Ux = Ux.asarray()
-        self.output = np.zeros(self.range.shape)
         tmp = np.zeros((self.input_size[0] * self.input_size[1], self.input_size[2], 2))
 
         for k in range(self.input_size[2]):
             grad = self.grad(Ux[:, :, k]).asarray()
+            tmp[:, k, :] = reduce_dimensions(np.transpose(grad, (1, 2, 0)))
 
-            tmp[:, k, 0] = reduce_dimensions(grad[0, :, :])
-            tmp[:, k, 1] = reduce_dimensions(grad[1, :, :])
-
-        for i in range(self.input_size[0] * self.input_size[1]):
-            self.output[:, i] = reduce_dimensions(tmp[i, :, :])
+        self.output = reduce_dimensions(np.transpose(tmp, (1, 2, 0)))
 
         return self.output
 

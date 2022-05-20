@@ -1,4 +1,4 @@
-from time import time
+from time import perf_counter
 from colorama import Fore
 from tqdm import tqdm
 from datetime import datetime
@@ -19,27 +19,27 @@ def run_pipeline_v1_tests(input_names):
         csvwriter = csv.writer(errors_log)
 
         for input_name in tqdm(input_names, desc='Processed inputs ', colour='green'):
-            start = time()
+            start = perf_counter()
             pipeline_bayer.run(input_name)
-            duration = time() - start
+            duration = perf_counter() - start
             tqdm.write(Fore.GREEN + f'Bayer pipeline test passed in {duration:.2f} seconds on image {input_name}.')
 
             mse_bayer = pipeline_bayer.mse_errors
             ssim_bayer = pipeline_bayer.ssim_errors
             csvwriter.writerow([datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 'Pipeline V1', input_name[:-4] + '_bayer', f'{duration:.2f}', np.mean(mse_bayer), np.mean(ssim_bayer)] + mse_bayer + ssim_bayer)
             
-            start = time()
+            start = perf_counter()
             pipeline_quad.run(input_name)
-            duration = time() - start
+            duration = perf_counter() - start
             tqdm.write(Fore.GREEN + f'Quad-Bayer pipeline test passed in {duration:.2f} seconds on image {input_name}.')
 
             mse_quad = pipeline_quad.mse_errors
             ssim_quad = pipeline_quad.ssim_errors
             csvwriter.writerow([datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 'Pipeline V1', input_name[:-4] + '_quad_bayer', f'{duration:.2f}', np.mean(mse_quad), np.mean(ssim_quad)] + mse_quad + ssim_quad)
 
-            start = time()
+            start = perf_counter()
             pipeline_binning.run(input_name)
-            duration = time() - start
+            duration = perf_counter() - start
             tqdm.write(Fore.GREEN + f'Quad-Bayer & binning pipeline test passed in {duration:.2f} seconds on image {input_name}.')
 
             mse_binning = pipeline_binning.mse_errors

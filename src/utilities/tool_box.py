@@ -32,7 +32,7 @@ def create_output_dirs():
     if not path.isfile(path.join('output', 'errors_log.csv')):
         with open(path.join('output', 'errors_log.csv'), 'w') as errors_log:
             csvwriter = csv.writer(errors_log)
-            csvwriter.writerow(['Date', 'Pipeline', 'Name', 'Elapsed time (s)', 'MSE mean', 'SSIM mean', 'MSE red error', 'MSE green error', 'MSE blue error', 'SSIM red error', 'SSIM green error', 'SSIM blue error'])
+            csvwriter.writerow(['Date', 'Pipeline', 'Name', 'Elapsed time (s)', 'MSE', 'SSIM', 'MSE red', 'MSE green', 'MSE blue', 'SSIM red', 'SSIM green', 'SSIM blue'])
 
     if not path.isdir(path.join('output', 'forward_model_outputs')):
         mkdir(path.join('output', 'forward_model_outputs'))
@@ -63,22 +63,12 @@ def reduce_dimensions(data):
     shape = data.shape
 
     if len(shape) == 3:
-        res = np.zeros((shape[0] * shape[1], shape[2]))
-
-        for k in range(shape[2]):
-            res[:, k] = data[:, :, k].flatten('F')
+        return np.reshape(data, (shape[0] * shape[1], shape[2]), order='F')
 
     elif len(shape) == 4:
-        res = np.zeros((shape[0] * shape[1], shape[2], shape[3]))
+        return np.reshape(data, (shape[0] * shape[1], shape[2], shape[3]), order='F')
 
-        for l in range(shape[3]):
-            for k in range(shape[2]):
-                res[:, k, l] = data[:, :, k, l].flatten('F')
-
-    else:
-        res = data.flatten('F')
-
-    return res
+    return np.reshape(data, (shape[0] * shape[1]), order='F')
 
 
 def increase_dimensions(data, new_shape):

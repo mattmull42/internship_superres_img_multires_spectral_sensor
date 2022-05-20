@@ -1,4 +1,4 @@
-from time import time
+from time import perf_counter
 from colorama import Fore
 
 from src.forward_operator_class import *
@@ -14,7 +14,7 @@ def run_test(operator, x, y):
 
 
 def cfa_test(cfa):
-    start = time()
+    start = perf_counter()
 
     operator = cfa_operator(cfa, INPUT_SIZE, SPECTRAL_STENCIL)
 
@@ -22,7 +22,7 @@ def cfa_test(cfa):
     y = np.random.rand(INPUT_SIZE[0], INPUT_SIZE[1])
 
     if run_test(operator, x, y):
-        duration = time() - start
+        duration = perf_counter() - start
         print(Fore.GREEN + f'CFA operator adjoint test passed in {duration:.2f} seconds for the CFA {cfa}.')
 
     else:
@@ -30,7 +30,7 @@ def cfa_test(cfa):
 
 
 def binning_test(cfa):
-    start = time()
+    start = perf_counter()
 
     operator = binning_operator(cfa, INPUT_SIZE[:2])
 
@@ -38,7 +38,7 @@ def binning_test(cfa):
     y = np.random.rand(operator.P_i, operator.P_j)
 
     if run_test(operator, x, y):
-        duration = time() - start
+        duration = perf_counter() - start
         print(Fore.GREEN + f'Binning operator adjoint test passed in {duration:.2f} seconds for the CFA {cfa}.')
 
     else:
@@ -46,7 +46,7 @@ def binning_test(cfa):
 
 
 def TV_test():
-    start = time()
+    start = perf_counter()
 
     operator = TV_operator(INPUT_SIZE)
 
@@ -54,7 +54,7 @@ def TV_test():
     y = np.random.rand(2 * INPUT_SIZE[2], INPUT_SIZE[0] * INPUT_SIZE[1])
 
     if run_test(operator, x, y):
-        duration = time() - start
+        duration = perf_counter() - start
         print(Fore.GREEN + f'Total variation operator adjoint test passed in {duration:.2f} seconds.')
 
     else:
@@ -62,7 +62,7 @@ def TV_test():
 
 
 def forward_test(cfa, binning):
-    start = time()
+    start = perf_counter()
 
     operator = Forward_operator(cfa, INPUT_SIZE, SPECTRAL_STENCIL, binning)
 
@@ -76,7 +76,7 @@ def forward_test(cfa, binning):
         postfix = ' without binning.'
 
     if run_test(operator, x, y):
-        duration = time() - start
+        duration = perf_counter() - start
         print(Fore.GREEN + f'Forward operator adjoint test passed in {duration:.2f} seconds for the CFA {cfa}' + postfix)
 
     else:
