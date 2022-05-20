@@ -1,5 +1,7 @@
 import odl
 import matplotlib.pyplot as plt
+import torch
+from torch.nn.functional import conv2d
 
 from src.utilities.tool_box import *
 from src.operators.binning_adjoint_class import *
@@ -23,14 +25,17 @@ class binning_operator(odl.Operator):
 
     def _call(self, X):
         X = X.asarray()
-        self.output = np.zeros(self.range.shape)
+        ker = np.ones((2, 2)) / 4
 
-        for i in range(self.P_i):
-            for j in range(self.P_j):
-                l_i = ((i + self.l) >= self.input_size[0]) * (self.input_size[0] - i - self.l) + self.l
-                l_j = ((j + self.l) >= self.input_size[1]) * (self.input_size[1] - j - self.l) + self.l
-                
-                self.output[i, j] = np.mean(X[i * self.l:i * self.l + l_i, j * self.l:j * self.l + l_j])
+        arr = torch.tensor(np.expand_dims(X, axis=(0,1)))
+        arr2 = torch.tensor(np.expand_dims(ker, axis=(0,1)))
+        self.output = conv2d(arr, arr2, stride=2, padding=((self.input_size[0] % 2) * 2, (self.input_size[1] % 2) * 2)).numpy().squeeze()
+
+        if self.input_size[0] % 2:
+            self.output = self.output[1:]
+
+        if self.input_size[1] % 2:
+            self.output = self.output[:, 1:]
 
         return self.output
 

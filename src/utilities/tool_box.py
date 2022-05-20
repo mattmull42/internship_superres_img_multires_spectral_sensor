@@ -6,7 +6,7 @@ import csv
 def get_indices_rgb(spectral_stencil):
     if len(spectral_stencil) < 3:
         raise Exception('The image must have at least 3 channels, a red, a green and a blue.')
-        
+
     return (np.abs(spectral_stencil - 6500)).argmin(), (np.abs(spectral_stencil - 5500)).argmin(), (np.abs(spectral_stencil - 4450)).argmin()
 
 
@@ -20,7 +20,7 @@ def same_size_images(image_1, image_2, ignore_depth=False):
 def check_init_parameters(cfa=None, binning=None):
     if cfa and cfa not in ['bayer', 'quad_bayer']:
             raise Exception('cfa must be bayer, quad_bayer.')
-    
+
     if binning and not isinstance(binning, bool):
         raise Exception('binning must be a boolean.')
 
