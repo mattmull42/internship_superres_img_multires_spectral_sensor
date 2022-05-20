@@ -15,13 +15,13 @@ class binning_adjoint(odl.Operator):
 
     def _call(self, X):
         X = X.asarray()
-        self.output = np.zeros(self.range.shape)
 
-        for i in range(self.P_i):
-            for j in range(self.P_j):
-                l_i = ((i + self.l) >= self.output_size[0]) * (self.output_size[0] - i - self.l) + self.l
-                l_j = ((j + self.l) >= self.output_size[1]) * (self.output_size[1] - j - self.l) + self.l
+        self.output = np.repeat(np.repeat(X, 2, axis=0), 2, axis=1) / self.l**2
 
-                self.output[i * self.l:i * self.l + l_i, j * self.l:j * self.l + l_j] = X[i, j] / self.l**2
+        if self.output_size[0] % 2:
+            self.output = self.output[:-1]
+
+        if self.output_size[1] % 2:
+            self.output = self.output[:, :-1]
 
         return self.output

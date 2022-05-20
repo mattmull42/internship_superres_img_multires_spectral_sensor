@@ -24,14 +24,14 @@ class cfa_operator(odl.Operator):
     def _call(self, Ux):
         Ux = Ux.asarray()
 
-        self.output = increase_dimensions(sum(reduce_dimensions(Ux)[:, k] * self.cfa_mask[:, k] for k in range(self.input_size[2])), self.input_size[:2])
+        self.output = increase_dimensions(np.sum(reduce_dimensions(Ux) * self.cfa_mask, axis=1), self.input_size[:2])
 
         return self.output
 
 
     @property
     def adjoint(self):
-        return cfa_adjoint(self.cfa, self.input_size, self.spectral_stencil)
+        return cfa_adjoint(self.input_size, self.cfa_mask)
 
 
     def get_bayer_mask(self):
