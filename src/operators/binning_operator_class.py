@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 import torch
 from torch.nn.functional import conv2d
 
-from src.utilities.tool_box import *
 from src.operators.binning_adjoint_class import *
 
 

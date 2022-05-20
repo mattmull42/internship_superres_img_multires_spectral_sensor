@@ -1,6 +1,3 @@
-import matplotlib.pyplot as plt
-
-from src.utilities.tool_box import *
 from src.forward_operator_class import *
 from src.operators.TV_operator_class import *
 
