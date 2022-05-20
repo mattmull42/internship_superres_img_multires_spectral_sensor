@@ -2,7 +2,6 @@
 
 import sys
 from os import listdir
-from time import time
 
 from testing.adjoint_tests import *
 from testing.pipeline_v1_tests import *
