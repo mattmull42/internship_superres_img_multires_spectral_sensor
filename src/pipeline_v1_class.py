@@ -34,12 +34,7 @@ class Pipeline_v1:
 
         self.image_inverse = initialize_inverse_input(self.input_name_inverse)
 
-        if self.binning:
-            self.inverse_problem = Inverse_problem(self.cfa, self.binning, self.forward_model.get_parameters())
-
-        else:
-            self.inverse_problem = Inverse_problem(self.cfa, self.binning)
-
+        self.inverse_problem = Inverse_problem(self.cfa, self.binning, self.forward_model.get_parameters())
         self.inverse_problem(self.image_inverse)
         self.inverse_problem.save_output(self.input_name_inverse)
 

@@ -20,7 +20,7 @@ class Forward_operator(odl.Operator):
         else:
             self.output_size = self.input_size[:2]
 
-        odl.Operator.__init__(self, odl.uniform_discr(min_pt=[0, 0, 0], max_pt=self.input_size, shape=self.input_size), odl.rn(self.output_size), linear=True)
+        odl.Operator.__init__(self, odl.uniform_discr([0, 0, 0], self.input_size, self.input_size), odl.uniform_discr([0, 0], self.output_size, self.output_size))
 
 
     def _call(self, Ux):
@@ -45,7 +45,11 @@ class Forward_operator(odl.Operator):
 
 
     def get_parameters(self):
-        return self.input_size[:2], self.binning_factor
+        if self.binning:
+            return self.cfa_operator.cfa_mask, self.input_size[:2], self.binning_factor
+
+        else:
+            return [self.cfa_operator.cfa_mask]
 
 
     def save_output(self, input_name):

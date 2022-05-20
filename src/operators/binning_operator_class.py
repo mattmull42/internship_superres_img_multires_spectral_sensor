@@ -1,4 +1,3 @@
-import odl
 import matplotlib.pyplot as plt
 import torch
 from torch.nn.functional import conv2d
@@ -19,7 +18,7 @@ class binning_operator(odl.Operator):
         self.P_i = int(np.ceil(self.input_size[0] / self.l))
         self.P_j = int(np.ceil(self.input_size[1] / self.l))
 
-        odl.Operator.__init__(self, odl.uniform_discr(min_pt=[0, 0], max_pt=self.input_size, shape=self.input_size), odl.uniform_discr(min_pt=[0, 0], max_pt=(self.P_i, self.P_j), shape=(self.P_i, self.P_j)), linear=True)
+        odl.Operator.__init__(self, odl.uniform_discr([0, 0], self.input_size, self.input_size), odl.uniform_discr([0, 0], (self.P_i, self.P_j), (self.P_i, self.P_j)))
 
 
     def _call(self, X):

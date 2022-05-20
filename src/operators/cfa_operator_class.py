@@ -9,10 +9,9 @@ class cfa_operator(odl.Operator):
 
         self.cfa = cfa
         self.input_size = input_size
-        self.spectral_stencil = spectral_stencil
-        self.k_r, self.k_g, self.k_b = get_indices_rgb(self.spectral_stencil)
+        self.k_r, self.k_g, self.k_b = get_indices_rgb(spectral_stencil)
 
-        odl.Operator.__init__(self, odl.uniform_discr(min_pt=[0, 0, 0], max_pt=self.input_size, shape=self.input_size), odl.rn(self.input_size[:-1]), linear=True)
+        odl.Operator.__init__(self, odl.uniform_discr([0, 0, 0], self.input_size, self.input_size), odl.rn(self.input_size[:-1]))
 
         if self.cfa == 'bayer':
             self.get_bayer_mask()

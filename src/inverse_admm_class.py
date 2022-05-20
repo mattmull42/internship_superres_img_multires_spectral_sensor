@@ -42,7 +42,7 @@ class Inverse_problem_ADMM:
                 self.output = self.A.adjoint(y)
 
         self.data_fit = odl.solvers.L2NormSquared(self.A.range).translated(y)
-        self.reg_func = self.eps * odl.solvers.GroupL1Norm(odl.ProductSpace(odl.rn(self.output_size[0] * self.output_size[1]), 2 * self.output_size[2]))
+        self.reg_func = self.eps * odl.solvers.GroupL1Norm(self.TV.range, exponent=2)
         self.g = odl.solvers.SeparableSum(self.data_fit, self.reg_func)
 
         odl.solvers.admm_linearized(self.output, self.f, self.g, self.L, self.tau, self.sigma, self.niter)

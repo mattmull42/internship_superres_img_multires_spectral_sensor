@@ -8,7 +8,7 @@ class cfa_adjoint(odl.Operator):
         self.output_size = output_size
         self.cfa_mask = cfa_mask
 
-        odl.Operator.__init__(self, odl.uniform_discr(min_pt=[0, 0], max_pt=self.output_size[:2], shape=self.output_size[:2]), odl.uniform_discr(min_pt=[0, 0, 0], max_pt=self.output_size, shape=self.output_size), linear=True)
+        odl.Operator.__init__(self, odl.uniform_discr([0, 0], self.output_size[:2], self.output_size[:2]), odl.uniform_discr([0, 0, 0], self.output_size, self.output_size))
 
 
     def _call(self, X):

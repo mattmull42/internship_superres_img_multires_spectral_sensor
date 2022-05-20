@@ -7,9 +7,9 @@ class TV_adjoint(odl.Operator):
     def __init__(self, output_size):
         self.output_size = output_size
 
-        odl.Operator.__init__(self, odl.ProductSpace(odl.rn(output_size[0] * output_size[1]), 2 * output_size[2]), odl.uniform_discr(min_pt=[0, 0, 0], max_pt=self.output_size, shape=self.output_size), linear=True)
+        odl.Operator.__init__(self, odl.ProductSpace(odl.rn(output_size[0] * output_size[1]), 2 * output_size[2]), odl.uniform_discr([0, 0, 0], self.output_size, self.output_size))
 
-        self.grad = odl.Gradient(odl.uniform_discr(min_pt=[0, 0], max_pt=output_size[:2], shape=output_size[:2]), pad_mode='order0')
+        self.grad = odl.Gradient(odl.uniform_discr([0, 0], output_size[:2], output_size[:2]), pad_mode='order0')
 
 
     def _call(self, UG):

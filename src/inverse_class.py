@@ -6,15 +6,16 @@ from src.utilities.custom_convolution import *
 
 
 class Inverse_problem:
-    def __init__(self, cfa, binning, forward_model_parameters=None):
+    def __init__(self, cfa, binning, forward_model_parameters):
         check_init_parameters(cfa=cfa, binning=binning)
 
         self.cfa = cfa
         self.binning = binning
+        self.cfa_mask = forward_model_parameters[0]
 
         if self.binning:
-            self.output_size = np.append(forward_model_parameters[0], 3)
-            self.binning_factor = forward_model_parameters[1]
+            self.output_size = np.append(forward_model_parameters[1], 3)
+            self.binning_factor = forward_model_parameters[2]
 
 
     def __call__(self, image):
@@ -25,36 +26,21 @@ class Inverse_problem:
 
         if self.binning:
             self.apply_upscaling()
+            self.output_sparse_channel = increase_dimensions(np.transpose(np.transpose(self.cfa_mask) * reduce_dimensions(self.output_upscaling)), self.output_size)
 
         else:
             self.output_size = np.append(self.input.shape, 3)
+            self.output_sparse_channel = increase_dimensions(np.transpose(np.transpose(self.cfa_mask) * reduce_dimensions(self.input)), self.output_size)
 
         if self.cfa == 'bayer':
-            self.apply_bayer_sparse()
             self.apply_bayer_demosaicing()
 
         elif self.cfa == 'quad_bayer':
-            self.apply_quad_sparse()
             self.apply_quad_demosaicing()
 
         self.output = self.output_demosaicing
 
         return self.output
-
-
-    def apply_bayer_sparse(self):
-        self.output_sparse_channel = np.zeros(self.output_size)
-
-        for i in range(self.output_size[0]):
-            for j in range(self.output_size[1]):
-                if i % 2 == 0 and j % 2 == 1:
-                    self.output_sparse_channel[i, j, 0] = self.input[i, j]
-
-                elif (i % 2 == 0 and j % 2 == 0) or (i % 2 == 1 and j % 2 == 1):
-                    self.output_sparse_channel[i, j, 1] = self.input[i, j]
-
-                elif i % 2 == 1 and j % 2 == 0:
-                    self.output_sparse_channel[i, j, 2] = self.input[i, j]
 
 
     def apply_bayer_demosaicing(self):
@@ -63,27 +49,6 @@ class Inverse_problem:
         self.output_demosaicing[:, :, 0] = convolve2d(self.output_sparse_channel[:, :, 0], ker_bayer_red_blue, mode='same')
         self.output_demosaicing[:, :, 1] = convolve2d(self.output_sparse_channel[:, :, 1], ker_bayer_green, mode='same')
         self.output_demosaicing[:, :, 2] = convolve2d(self.output_sparse_channel[:, :, 2], ker_bayer_red_blue, mode='same')
-
-
-    def apply_quad_sparse(self):
-        self.output_sparse_channel = np.zeros(self.output_size)
-
-        if self.binning:
-            base_image = self.output_upscaling
-
-        else:
-            base_image = self.input
-
-        for i in range(self.output_size[0]):
-            for j in range(self.output_size[1]):
-                if i % 4 < 2 and j % 4 >= 2:
-                    self.output_sparse_channel[i, j, 0] = base_image[i, j]
-
-                elif (i % 4 < 2 and j % 4 < 2) or (i % 4 >= 2 and j % 4 >= 2):
-                    self.output_sparse_channel[i, j, 1] = base_image[i, j]
-
-                elif i % 4 >= 2 and j % 4 < 2:
-                    self.output_sparse_channel[i, j, 2] = base_image[i, j]
 
 
     def apply_quad_demosaicing(self):
@@ -95,12 +60,13 @@ class Inverse_problem:
 
 
     def apply_upscaling(self):
-        self.output_upscaling = np.zeros(self.output_size[:2])
-        P_i, P_j = int(np.ceil(self.output_size[0] / self.binning_factor)), int(np.ceil(self.output_size[1] / self.binning_factor))
+        self.output_upscaling = np.repeat(np.repeat(self.input, 2, axis=0), 2, axis=1)
 
-        for i in range(P_i):
-            for j in range(P_j):
-                self.output_upscaling[i * self.binning_factor:(i + 1) * self.binning_factor, j * self.binning_factor:(j + 1) * self.binning_factor] = self.input[i, j]
+        if self.output_size[0] % 2:
+            self.output_upscaling = self.output_upscaling[:-1]
+
+        if self.output_size[1] % 2:
+            self.output_upscaling = self.output_upscaling[:, :-1]
 
 
     def save_output(self, input_name):
