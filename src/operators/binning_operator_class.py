@@ -20,6 +20,8 @@ class binning_operator(odl.Operator):
 
         odl.Operator.__init__(self, odl.uniform_discr([0, 0], self.input_size, self.input_size), odl.uniform_discr([0, 0], (self.P_i, self.P_j), (self.P_i, self.P_j)))
 
+        self.adjoint_op = binning_adjoint(self.input_size, self.l)
+
 
     def _call(self, X):
         X = X.asarray()
@@ -40,7 +42,7 @@ class binning_operator(odl.Operator):
 
     @property
     def adjoint(self):
-        return binning_adjoint(self.input_size, self.l)
+        return self.adjoint_op
 
 
     def save_output(self, input_name):

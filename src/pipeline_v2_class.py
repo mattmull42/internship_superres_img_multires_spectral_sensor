@@ -5,12 +5,14 @@ from src.utilities.errors import *
 
 
 class Pipeline_v2:
-    def __init__(self, cfa, binning, niter):
+    def __init__(self, cfa, binning, niter, sigma, epsilon):
         check_init_parameters(cfa=cfa, binning=binning)
 
         self.cfa = cfa
         self.binning = binning
         self.niter = niter
+        self.sigma = sigma
+        self.epsilon = epsilon
 
 
     def run(self, input_name):
@@ -35,7 +37,7 @@ class Pipeline_v2:
 
         self.image_inverse = initialize_inverse_input(self.input_name_inverse)
 
-        self.inverse_problem = Inverse_problem_ADMM(self.cfa, self.binning, self.input_size, self.spectral_stencil, self.niter, 2, 0.01)
+        self.inverse_problem = Inverse_problem_ADMM(self.cfa, self.binning, self.input_size, self.spectral_stencil, self.niter, self.sigma, self.epsilon)
 
         self.inverse_problem(self.image_inverse)
         self.inverse_problem.save_output(self.input_name_inverse)

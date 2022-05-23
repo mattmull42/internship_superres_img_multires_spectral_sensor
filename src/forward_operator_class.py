@@ -20,6 +20,13 @@ class Forward_operator(odl.Operator):
         else:
             self.output_size = self.input_size[:2]
 
+        if self.binning:
+            if self.cfa == 'quad_bayer':
+                self.adjoint_op = odl.OperatorComp(self.cfa_operator.adjoint, self.binning_operator.adjoint)
+
+        else:
+            self.adjoint_op = self.cfa_operator.adjoint
+
         odl.Operator.__init__(self, odl.uniform_discr([0, 0, 0], self.input_size, self.input_size), odl.uniform_discr([0, 0], self.output_size, self.output_size))
 
 
@@ -36,12 +43,7 @@ class Forward_operator(odl.Operator):
 
     @property
     def adjoint(self):
-        if self.binning:
-            if self.cfa == 'quad_bayer':
-                return odl.OperatorComp(self.cfa_operator.adjoint, self.binning_operator.adjoint)
-
-        else:
-            return self.cfa_operator.adjoint
+        return self.adjoint_op
 
 
     def get_parameters(self):

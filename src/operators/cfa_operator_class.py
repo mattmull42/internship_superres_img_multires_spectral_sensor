@@ -19,6 +19,8 @@ class cfa_operator(odl.Operator):
         elif self.cfa == 'quad_bayer':
             self.get_quad_mask()
 
+        self.adjoint_op = cfa_adjoint(self.input_size, self.cfa_mask)
+
 
     def _call(self, Ux):
         Ux = Ux.asarray()
@@ -30,7 +32,7 @@ class cfa_operator(odl.Operator):
 
     @property
     def adjoint(self):
-        return cfa_adjoint(self.input_size, self.cfa_mask)
+        return self.adjoint_op
 
 
     def get_bayer_mask(self):

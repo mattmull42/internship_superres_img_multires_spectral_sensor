@@ -15,11 +15,11 @@ def main(argv):
     else:
         input_names = argv[1:]
 
-    run_adjoint_tests()
+    # run_adjoint_tests()
 
-    run_pipeline_v1_tests(input_names)
+    # run_pipeline_v1_tests(input_names)
 
-    run_pipeline_v2_tests(input_names, 200)
+    run_pipeline_v2_tests(input_names, 500, 50, 0.01)
 
 
 if __name__ == "__main__":
