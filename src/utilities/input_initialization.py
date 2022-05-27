@@ -22,7 +22,7 @@ def initialize_input(name):
                 res[i, j] = [np.random.choice([0,1]), np.random.choice([0,1]), np.random.choice([0,1])]
 
     else:
-        res = np.asarray(Image.open(path.join('input', name)).resize((512, 512))) / 255
+        res = np.asarray(Image.open(path.join('input', name))) / 255
         spectral_stencil = np.array([6500, 5500, 4450])
 
         if res.shape[2] > 3:

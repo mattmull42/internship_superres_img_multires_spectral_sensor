@@ -3,13 +3,14 @@ from src.operators.TV_operator_class import *
 
 
 class Inverse_problem_ADMM:
-    def __init__(self, cfa, binning, output_size, spectral_stencil, niter, sigma, eps, f=None):
+    def __init__(self, cfa, binning, output_size, spectral_stencil, niter, sigma, eps, box_constraint):
         check_init_parameters(cfa=cfa, binning=binning)
 
         self.cfa = cfa
         self.binning = binning
         self.output_size = output_size
         self.spectral_stencil = spectral_stencil
+        self.box_constraint = box_constraint
 
         self.A = Forward_operator(self.cfa, self.output_size, self.spectral_stencil, self.binning)
         self.TV = TV_operator(self.output_size)
@@ -18,13 +19,13 @@ class Inverse_problem_ADMM:
         self.sigma = sigma
         self.eps = eps
 
-        if f is not None:
-            self.f = f
+        self.f = odl.solvers.IndicatorBox(self.L.domain, 0, 1)
+
+        if self.box_constraint:
             self.op_norm = 1.1 * odl.power_method_opnorm(self.L, maxiter=50)
             self.tau = self.sigma / self.op_norm ** 2
 
         else:
-            self.f = odl.solvers.ZeroFunctional(self.L.domain)
             self.tau = 1
 
         self.niter = niter
@@ -49,7 +50,8 @@ class Inverse_problem_ADMM:
 
         self.output = self.output.asarray()
 
-        np.clip(self.output, 0, 1, self.output)
+        if not self.box_constraint:
+            np.clip(self.output, 0, 1, self.output)
 
         return self.output
 

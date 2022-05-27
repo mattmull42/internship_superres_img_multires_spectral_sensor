@@ -25,7 +25,7 @@ def run_pipeline_v1_tests(input_names):
 
             mse_bayer = pipeline_bayer.mse_errors
             ssim_bayer = pipeline_bayer.ssim_errors
-            csvwriter.writerow([datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 'Pipeline V1', input_name[:-4] + '_bayer', f'{duration:.2f}', np.mean(mse_bayer), np.mean(ssim_bayer)] + mse_bayer + ssim_bayer)
+            csvwriter.writerow([datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 'Pipeline V1', input_name[:-4] + '_bayer', f'{duration:.2f}', f'{np.mean(mse_bayer):.4f}', f'{np.mean(ssim_bayer):.4f}'] + mse_bayer + ssim_bayer)
             
             start = perf_counter()
             pipeline_quad.run(input_name)
@@ -34,7 +34,7 @@ def run_pipeline_v1_tests(input_names):
 
             mse_quad = pipeline_quad.mse_errors
             ssim_quad = pipeline_quad.ssim_errors
-            csvwriter.writerow([datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 'Pipeline V1', input_name[:-4] + '_quad_bayer', f'{duration:.2f}', np.mean(mse_quad), np.mean(ssim_quad)] + mse_quad + ssim_quad)
+            csvwriter.writerow([datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 'Pipeline V1', input_name[:-4] + '_quad_bayer', f'{duration:.2f}', f'{np.mean(mse_quad):.4f}', f'{np.mean(ssim_quad):.4f}'] + mse_quad + ssim_quad)
 
             start = perf_counter()
             pipeline_binning.run(input_name)
@@ -43,7 +43,7 @@ def run_pipeline_v1_tests(input_names):
 
             mse_binning = pipeline_binning.mse_errors
             ssim_binning = pipeline_binning.ssim_errors
-            csvwriter.writerow([datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 'Pipeline V1', input_name[:-4] + '_quad_bayer_binning', f'{duration:.2f}', np.mean(mse_binning), np.mean(ssim_binning)] + mse_binning + ssim_binning)
+            csvwriter.writerow([datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 'Pipeline V1', input_name[:-4] + '_quad_bayer_binning', f'{duration:.2f}', f'{np.mean(ssim_binning):.4f}', f'{np.mean(ssim_binning):.4f}'] + mse_binning + ssim_binning)
 
             csvwriter.writerow([])
 
