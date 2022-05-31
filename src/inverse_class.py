@@ -12,10 +12,11 @@ class Inverse_problem:
         self.cfa = cfa
         self.binning = binning
         self.cfa_mask = forward_model_parameters[0]
+        self.noise_level = forward_model_parameters[1]
 
         if self.binning:
-            self.output_size = np.append(forward_model_parameters[1], 3)
-            self.binning_factor = forward_model_parameters[2]
+            self.output_size = np.append(forward_model_parameters[2], 3)
+            self.binning_factor = forward_model_parameters[3]
 
 
     def __call__(self, image):

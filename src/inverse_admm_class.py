@@ -3,16 +3,17 @@ from src.operators.TV_operator_class import *
 
 
 class Inverse_problem_ADMM:
-    def __init__(self, cfa, binning, output_size, spectral_stencil, niter, sigma, eps, box_constraint):
+    def __init__(self, cfa, binning, noise_level, output_size, spectral_stencil, niter, sigma, eps, box_constraint):
         check_init_parameters(cfa=cfa, binning=binning)
 
         self.cfa = cfa
         self.binning = binning
+        self.noise_level = noise_level
         self.output_size = output_size
         self.spectral_stencil = spectral_stencil
         self.box_constraint = box_constraint
 
-        self.A = Forward_operator(self.cfa, self.output_size, self.spectral_stencil, self.binning)
+        self.A = Forward_operator(self.cfa, self.output_size, self.spectral_stencil, self.binning, self.noise_level)
         self.TV = TV_operator(self.output_size)
         self.L = odl.BroadcastOperator(self.A, self.TV)
 
