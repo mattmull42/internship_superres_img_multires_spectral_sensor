@@ -32,15 +32,14 @@ class Forward_operator(odl.Operator):
 
 
     def _call(self, Ux):
-        if self.binning:
-            if self.cfa == 'quad_bayer':
-                self.output = self.binning_operator(self.cfa_operator(Ux))
-
-        else:
-            self.output = self.cfa_operator(Ux)
-
+        self.output = self.cfa_operator(Ux)
+        
         if self.noise_level != 0:
             self.add_noise()
+
+        if self.binning:
+            if self.cfa == 'quad_bayer':
+                self.output = self.binning_operator(self.output)
 
         return self.output
 
@@ -51,7 +50,7 @@ class Forward_operator(odl.Operator):
 
 
     def add_noise(self):
-        self.output = np.clip(self.output + np.random.normal(0, self.noise_level / 100, self.output_size), 0, 1)
+        self.output = np.clip(self.output + np.random.normal(0, self.noise_level / 100, self.output.shape), 0, 1)
 
 
     def get_parameters(self):

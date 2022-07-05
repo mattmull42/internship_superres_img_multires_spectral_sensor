@@ -25,14 +25,28 @@ def check_init_parameters(cfa=None, binning=None):
         raise Exception('binning must be a boolean.')
 
 
+def get_inverse_input_path(forward_input_path, cfa, binning, noise_level):
+    input_name_without_extension = path.basename(path.splitext(forward_input_path)[0])
+
+    if not binning:
+        return path.join('output', 'forward_model_outputs', input_name_without_extension + f'_noise_{noise_level}_{cfa}.png')
+
+    return path.join('output', 'forward_model_outputs', input_name_without_extension + f'_noise_{noise_level}_binned_{cfa}.png')
+
+
 def create_output_dirs():
     if not path.isdir('output'):
         mkdir('output')
 
-    if not path.isfile(path.join('output', 'errors_log.csv')):
-        with open(path.join('output', 'errors_log.csv'), 'w') as errors_log:
-            csvwriter = csv.writer(errors_log)
-            csvwriter.writerow(['Date', 'Pipeline', 'Name', 'Elapsed time (s)', 'MSE', 'SSIM', 'MSE red', 'MSE green', 'MSE blue', 'SSIM red', 'SSIM green', 'SSIM blue'])
+    if not path.isfile(path.join('output', 'pipeline_log.csv')):
+        with open(path.join('output', 'pipeline_log.csv'), 'w') as pipeline_log:
+            csv_writer = csv.writer(pipeline_log)
+            csv_writer.writerow(['Date', 'CFA', 'Binning', 'Noise level', 'Pipeline', 'Name', 'Elapsed time (s)', 'MSE', 'SSIM', 'MSE red', 'MSE green', 'MSE blue', 'SSIM red', 'SSIM green', 'SSIM blue'])
+
+    if not path.isfile(path.join('output', 'batch_log.csv')):
+        with open(path.join('output', 'batch_log.csv'), 'w') as batch_log:
+            csv_writer = csv.writer(batch_log)
+            csv_writer.writerow(['Date', 'CFA', 'Binning', 'Noise level', 'Pipeline', 'MSE', 'SSIM'])
 
     if not path.isdir(path.join('output', 'forward_model_outputs')):
         mkdir(path.join('output', 'forward_model_outputs'))

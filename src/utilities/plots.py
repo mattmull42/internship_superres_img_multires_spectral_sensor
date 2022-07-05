@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from src.utilities.tool_box import *
 
 
-def plot_images(images_list, titles_list, nrows=1, ncols=None, figsize=(40, 40), name=None, police_color='white', rgb_channels=None):
+def plot_images(images_list, titles_list, nrows=1, ncols=None, figsize=(40, 40), name=None, police_color='black', rgb_channels=None):
     n = len(images_list)
 
     if not ncols:
@@ -38,7 +38,7 @@ def plot_images(images_list, titles_list, nrows=1, ncols=None, figsize=(40, 40),
     plt.show()
 
 
-def plot_errors(errors_list, title, figsize=(16, 8), name=None, police_color='white'):
+def plot_errors(errors_list, title, figsize=(16, 8), name=None, police_color='black'):
     plt.figure(figsize=figsize)
 
     x = np.arange(3)
