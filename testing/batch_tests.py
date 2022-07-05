@@ -11,8 +11,7 @@ def run_batch_tests(input_paths, noise_level, pipeline_version, pipeline_paramet
     create_output_dirs()
 
     with open(path.join('output', 'batch_log.csv'), 'a') as batch_log:
-        # for cfa, binning in zip(['bayer', 'quad_bayer', 'quad_bayer'], [False, False, True]):
-        for cfa, binning in zip(['quad_bayer', 'quad_bayer'], [False, True]):
+        for cfa, binning in zip(['bayer', 'quad_bayer', 'quad_bayer'], [False, False, True]):
             if pipeline_version == 1:
                 pipeline = Pipeline_v1(cfa, binning)
 
