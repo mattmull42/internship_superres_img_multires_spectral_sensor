@@ -36,9 +36,12 @@ def main(argv):
     x, spectral_stencil = initialize_input('input/01690.png')
     input_size = x.shape
 
-    forward_op = Forward_operator('quad_bayer', input_size, spectral_stencil, True, 0)
+    forward_op = Forward_operator('quad_bayer', input_size, spectral_stencil, False, 15)
     forward_op(x)
     forward_op.save_output('input/01690.png')
+
+    plt.imshow(forward_op.apply_matrix_operator(x), cmap="gray")
+    plt.show()
 
 
 if __name__ == "__main__":

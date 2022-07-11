@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import scipy.sparse as sp
 
 from src.operators.cfa_adjoint_class import *
 
@@ -64,6 +65,24 @@ class cfa_operator(odl.Operator):
 
                 else:
                     self.cfa_mask[i + self.input_size[0] * j, self.k_g] = 1
+
+
+    def get_matrix_operator(self):
+        if not hasattr(self, 'matrix_operator'):
+            N_ij = self.input_size[0] * self.input_size[1]
+            N_ijk = self.input_size[0] * self.input_size[1] * self.input_size[2]
+
+            cfa_i = np.repeat(list(range(N_ij)), 3)
+            cfa_j = []
+
+            for i in range(N_ij):
+                cfa_j += [i + k * N_ij for k in range(self.input_size[2])]
+
+            cfa_data = [self.cfa_mask[cfa_i[a], cfa_j[a] // N_ij] for a in range(len(cfa_i))]
+
+            self.matrix_operator = sp.csc_array((cfa_data, (cfa_i, cfa_j)), shape=(N_ij, N_ijk))
+
+        return self.matrix_operator
 
 
     def save_output(self, input_name):

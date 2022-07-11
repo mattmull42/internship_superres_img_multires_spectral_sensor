@@ -61,6 +61,32 @@ class Forward_operator(odl.Operator):
             return self.cfa_operator.cfa_mask, self.noise_level
 
 
+    def get_matrix_operator(self):
+        if not hasattr(self, 'matrix_operator'):
+            if self.binning:
+                self.matrix_operator = self.binning_operator.get_matrix_operator() @ self.cfa_operator.get_matrix_operator()
+
+            else:
+                self.matrix_operator = self.cfa_operator.get_matrix_operator()
+
+        return self.matrix_operator
+
+
+    def apply_matrix_operator(self, x):
+        self.get_matrix_operator()
+
+        if self.noise_level != 0:
+            tmp = self.cfa_operator.matrix_operator @ reduce_dimensions(reduce_dimensions(x))
+            tmp = np.clip(tmp + np.random.normal(0, self.noise_level / 100, self.cfa_operator.matrix_operator.shape[0]), 0, 1)
+
+            if self.binning:
+                return increase_dimensions(self.binning_operator.matrix_operator @ tmp, self.output_size)
+
+            return increase_dimensions(tmp, self.output_size)
+
+        return increase_dimensions(self.matrix_operator @ reduce_dimensions(reduce_dimensions(x)), self.output_size)
+
+
     def save_output(self, input_name):
         create_output_dirs()
 

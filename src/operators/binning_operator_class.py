@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import torch
 from torch.nn.functional import conv2d
+import scipy.sparse as sp
 
 from src.operators.binning_adjoint_class import *
 
@@ -43,6 +44,37 @@ class binning_operator(odl.Operator):
     @property
     def adjoint(self):
         return self.adjoint_op
+
+
+    def get_matrix_operator(self):
+        if not hasattr(self, 'matrix_operator'):
+            N_ij = self.input_size[0] * self.input_size[1]
+
+            if self.cfa == 'quad_bayer':
+                P_ij = self.P_i * self.P_j
+
+                binning_i, binning_j = [], []
+
+                for i in range(P_ij):
+                    tmp_i, tmp_j = 2 * (i % self.P_i), 2 * (i // self.P_i)
+                    binning_i.append(i)
+                    binning_j.append(tmp_i + self.input_size[0] * tmp_j)
+
+                    if tmp_i + 1 < self.input_size[0]:
+                        binning_i.append(i)
+                        binning_j.append(tmp_i + 1 + self.input_size[0] * tmp_j)
+
+                        if tmp_j + 1 < self.input_size[1]:
+                            binning_i.append(i)
+                            binning_i.append(i)
+                            binning_j.append(tmp_i + self.input_size[0] * (tmp_j + 1))
+                            binning_j.append(tmp_i + 1 + self.input_size[0] * (tmp_j + 1))
+
+                binning_data = np.ones_like(binning_i) / 4
+
+            self.matrix_operator = sp.csc_array((binning_data, (binning_i, binning_j)), shape=(P_ij, N_ij))
+
+        return self.matrix_operator
 
 
     def save_output(self, input_name):
