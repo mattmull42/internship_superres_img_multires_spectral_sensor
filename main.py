@@ -4,6 +4,7 @@ import sys
 from os import listdir
 
 from testing.adjoint_tests import *
+from testing.circulant_test import *
 from testing.batch_tests import *
 from testing.pipeline_tests import *
 
@@ -27,6 +28,8 @@ def main(argv):
 
     # run_adjoint_tests()
 
+    # run_circulant_tests()
+
     # run_pipeline_tests(input_paths, NOISE_LEVEL, pipeline_version=1)
     # run_pipeline_tests(input_paths, NOISE_LEVEL, pipeline_version=2, pipeline_parameters=[NITER, SIGMA, EPS, BOX_FLAG])
 
@@ -34,14 +37,16 @@ def main(argv):
     # run_batch_tests(BATCH_ARRAY, NOISE_LEVEL, pipeline_version=2, pipeline_parameters=[NITER, SIGMA, EPS, BOX_FLAG])
 
     x, spectral_stencil = initialize_input('input/01690.png')
-    input_size = x.shape
 
-    forward_op = Forward_operator('quad_bayer', input_size, spectral_stencil, False, 15)
-    forward_op(x)
-    forward_op.save_output('input/01690.png')
+    forward_op = Forward_operator('bayer', x.shape, spectral_stencil, False, 0)
+    # forward_op(x)
+    # forward_op.save_output('input/01690.png')
 
-    plt.imshow(forward_op.apply_matrix_operator(x), cmap="gray")
-    plt.show()
+    # plt.imshow(forward_op.apply_matrix_operator(x), cmap="gray")
+    # plt.show()
+
+    matrix = forward_op.get_matrix_operator()
+    matrix = matrix @ matrix.T
 
 
 if __name__ == "__main__":

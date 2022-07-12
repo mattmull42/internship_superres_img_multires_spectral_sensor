@@ -72,7 +72,7 @@ class cfa_operator(odl.Operator):
             N_ij = self.input_size[0] * self.input_size[1]
             N_ijk = self.input_size[0] * self.input_size[1] * self.input_size[2]
 
-            cfa_i = np.repeat(list(range(N_ij)), 3)
+            cfa_i = np.repeat(list(range(N_ij)), self.input_size[2])
             cfa_j = []
 
             for i in range(N_ij):
