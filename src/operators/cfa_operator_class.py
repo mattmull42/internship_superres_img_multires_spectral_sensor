@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
-import scipy.sparse as sp
+from scipy.sparse import coo_array
 
-from src.operators.cfa_adjoint_class import *
+from binning_operator.operators.cfa_adjoint_class import *
 
 
 class cfa_operator(odl.Operator):
@@ -80,7 +80,7 @@ class cfa_operator(odl.Operator):
 
             cfa_data = [self.cfa_mask[cfa_i[a], cfa_j[a] // N_ij] for a in range(len(cfa_i))]
 
-            self.matrix_operator = sp.csc_array((cfa_data, (cfa_i, cfa_j)), shape=(N_ij, N_ijk))
+            self.matrix_operator = coo_array((cfa_data, (cfa_i, cfa_j)), shape=(N_ij, N_ijk))
 
         return self.matrix_operator
 

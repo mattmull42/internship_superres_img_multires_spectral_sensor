@@ -1,4 +1,5 @@
 import numpy as np
+import torch
 from os import path, mkdir
 import csv
 
@@ -87,3 +88,21 @@ def reduce_dimensions(data):
 
 def increase_dimensions(data, new_shape):
     return np.reshape(data, new_shape, order='F')
+
+
+def reduce_dims_tensor(tensor):
+    shape = tensor.shape
+
+    if len(shape) == 2:
+        return tensor.t().flatten()
+
+    elif len(shape) == 3:
+        return torch.transpose(tensor, 0, 1).flatten(end_dim=-2)
+
+
+def increase_dims_tensor(tensor, shape):
+    if len(shape) == 2:
+        return torch.reshape(tensor, (shape[1], shape[0])).t()
+
+    elif len(shape) == 3:
+        return torch.transpose(torch.reshape(tensor, (shape[2], shape[1], shape[0])), 0, 2)

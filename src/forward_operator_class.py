@@ -1,5 +1,7 @@
-from src.operators.cfa_operator_class import *
-from src.operators.binning_operator_class import *
+from torch import *
+
+from binning_operator.operators.cfa_operator_class import *
+from binning_operator.operators.binning_operator_class import *
 
 
 class Forward_operator(odl.Operator):
@@ -61,13 +63,16 @@ class Forward_operator(odl.Operator):
             return self.cfa_operator.cfa_mask, self.noise_level
 
 
-    def get_matrix_operator(self):
+    def get_matrix_operator(self, is_tensor=False):
         if not hasattr(self, 'matrix_operator'):
             if self.binning:
                 self.matrix_operator = self.binning_operator.get_matrix_operator() @ self.cfa_operator.get_matrix_operator()
 
             else:
                 self.matrix_operator = self.cfa_operator.get_matrix_operator()
+
+        if is_tensor:
+            return  torch.sparse.FloatTensor(torch.LongTensor(np.vstack((self.matrix_operator.row, self.matrix_operator.col))), torch.Tensor(self.matrix_operator.data), self.matrix_operator.shape)
 
         return self.matrix_operator
 

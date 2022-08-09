@@ -1,9 +1,9 @@
 import matplotlib.pyplot as plt
 import torch
 from torch.nn.functional import conv2d
-import scipy.sparse as sp
+from scipy.sparse import coo_array
 
-from src.operators.binning_adjoint_class import *
+from binning_operator.operators.binning_adjoint_class import *
 
 
 class binning_operator(odl.Operator):
@@ -72,7 +72,7 @@ class binning_operator(odl.Operator):
 
                 binning_data = np.ones_like(binning_i) / 4
 
-            self.matrix_operator = sp.csc_array((binning_data, (binning_i, binning_j)), shape=(P_ij, N_ij))
+            self.matrix_operator = coo_array((binning_data, (binning_i, binning_j)), shape=(P_ij, N_ij))
 
         return self.matrix_operator
 

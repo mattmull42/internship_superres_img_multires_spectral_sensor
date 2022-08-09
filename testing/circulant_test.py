@@ -4,12 +4,12 @@ from colorama import Fore
 from src.forward_operator_class import *
 
 
-INPUT_SIZE = (128, 128, 4)
+INPUT_SIZE = (4, 4, 3)
 SPECTRAL_STENCIL = np.linspace(4400, 6500, INPUT_SIZE[2])
 
 
 def run_test(matrix):
-    matrix = matrix @ matrix.T
+    matrix = matrix.T @ matrix
 
     def column_to_array(j):
         return matrix[:, [j]].toarray().flatten()

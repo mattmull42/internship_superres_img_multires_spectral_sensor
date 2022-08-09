@@ -38,7 +38,7 @@ def main(argv):
 
     x, spectral_stencil = initialize_input('input/01690.png')
 
-    forward_op = Forward_operator('bayer', x.shape, spectral_stencil, False, 0)
+    forward_op = Forward_operator('quad_bayer', [12, 12, 3], spectral_stencil, True, 0)
     # forward_op(x)
     # forward_op.save_output('input/01690.png')
 
@@ -46,7 +46,28 @@ def main(argv):
     # plt.show()
 
     matrix = forward_op.get_matrix_operator()
-    matrix = matrix @ matrix.T
+    matrix = matrix.T @ matrix
+
+    from scipy.fft import fft, ifft
+    from scipy.linalg import circulant
+
+    # plt.imshow(forward_op.apply_matrix_operator(x), cmap="gray")
+    # plt.show()
+
+    n = 25000
+    A = circulant(2 * np.random.random(n))
+    x = np.random.random(n)
+
+    res = A @ x
+
+    eigvals = np.full(n, A[0, 0], dtype=complex)
+
+    for k in range(1, n):
+        eigvals += A[k, 0] * np.exp((2 * np.pi * np.arange(n) * k * 1j) / n)
+
+    res_fourier = fft(eigvals * ifft(x))
+
+    print(np.linalg.norm(res - res_fourier))
 
 
 if __name__ == "__main__":
