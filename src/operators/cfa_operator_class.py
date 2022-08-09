@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 from scipy.sparse import coo_array
 
-from binning_operator.operators.cfa_adjoint_class import *
+from src.operators.cfa_adjoint_class import *
 
 
 class cfa_operator(odl.Operator):

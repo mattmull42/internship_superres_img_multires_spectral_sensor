@@ -10,7 +10,7 @@ from testing.pipeline_tests import *
 
 
 NOISE_LEVEL = 0
-NITER = 1000
+NITER = 100
 SIGMA = 50
 EPS = 0.001
 BOX_FLAG = True
@@ -38,36 +38,13 @@ def main(argv):
 
     x, spectral_stencil = initialize_input('input/01690.png')
 
-    forward_op = Forward_operator('quad_bayer', [12, 12, 3], spectral_stencil, True, 0)
-    # forward_op(x)
-    # forward_op.save_output('input/01690.png')
+    forward_op = Forward_operator('quad_bayer', x.shape, spectral_stencil, True, 0)
+    ADMM_op = Inverse_problem_ADMM('quad_bayer', True, 0, x.shape, spectral_stencil, NITER, SIGMA, EPS, BOX_FLAG)
 
-    # plt.imshow(forward_op.apply_matrix_operator(x), cmap="gray")
-    # plt.show()
+    ADMM_op(forward_op(x))
 
-    matrix = forward_op.get_matrix_operator()
-    matrix = matrix.T @ matrix
-
-    from scipy.fft import fft, ifft
-    from scipy.linalg import circulant
-
-    # plt.imshow(forward_op.apply_matrix_operator(x), cmap="gray")
-    # plt.show()
-
-    n = 25000
-    A = circulant(2 * np.random.random(n))
-    x = np.random.random(n)
-
-    res = A @ x
-
-    eigvals = np.full(n, A[0, 0], dtype=complex)
-
-    for k in range(1, n):
-        eigvals += A[k, 0] * np.exp((2 * np.pi * np.arange(n) * k * 1j) / n)
-
-    res_fourier = fft(eigvals * ifft(x))
-
-    print(np.linalg.norm(res - res_fourier))
+    plt.imshow(ADMM_op.output)
+    plt.show()
 
 
 if __name__ == "__main__":

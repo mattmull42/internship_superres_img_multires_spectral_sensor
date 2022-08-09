@@ -1,7 +1,7 @@
 from torch import *
 
-from binning_operator.operators.cfa_operator_class import *
-from binning_operator.operators.binning_operator_class import *
+from src.operators.cfa_operator_class import *
+from src.operators.binning_operator_class import *
 
 
 class Forward_operator(odl.Operator):

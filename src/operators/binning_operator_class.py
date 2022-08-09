@@ -3,7 +3,7 @@ import torch
 from torch.nn.functional import conv2d
 from scipy.sparse import coo_array
 
-from binning_operator.operators.binning_adjoint_class import *
+from src.operators.binning_adjoint_class import *
 
 
 class binning_operator(odl.Operator):
