@@ -66,7 +66,7 @@ class Forward_operator(odl.Operator):
     def get_matrix_operator(self, is_tensor=False):
         if not hasattr(self, 'matrix_operator'):
             if self.binning:
-                self.matrix_operator = self.binning_operator.get_matrix_operator() @ self.cfa_operator.get_matrix_operator()
+                self.matrix_operator = (self.binning_operator.get_matrix_operator() @ self.cfa_operator.get_matrix_operator()).tocoo()
 
             else:
                 self.matrix_operator = self.cfa_operator.get_matrix_operator()
