@@ -106,3 +106,11 @@ def increase_dims_tensor(tensor, shape):
 
     elif len(shape) == 3:
         return torch.transpose(torch.reshape(tensor, (shape[2], shape[1], shape[0])), 0, 2)
+
+
+def scipy_sparse_to_pytorch_sparse(matrix, dtype=None):
+    if dtype:
+      return torch.sparse.FloatTensor(torch.LongTensor(np.vstack((matrix.row, matrix.col))), torch.Tensor(matrix.data), matrix.shape).type(dtype)
+
+    else:
+      return torch.sparse.FloatTensor(torch.LongTensor(np.vstack((matrix.row, matrix.col))), torch.Tensor(matrix.data), matrix.shape)

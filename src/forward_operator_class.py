@@ -72,24 +72,42 @@ class Forward_operator(odl.Operator):
                 self.matrix_operator = self.cfa_operator.get_matrix_operator()
 
         if is_tensor:
-            return  torch.sparse.FloatTensor(torch.LongTensor(np.vstack((self.matrix_operator.row, self.matrix_operator.col))), torch.Tensor(self.matrix_operator.data), self.matrix_operator.shape)
+            return scipy_sparse_to_pytorch_sparse(self.matrix_operator)
 
         return self.matrix_operator
 
 
-    def apply_matrix_operator(self, x):
-        self.get_matrix_operator()
+    def apply_matrix_operator(self, x, is_tensor=False, dtype=None):
+        self.get_matrix_operator(is_tensor)
 
-        if self.noise_level != 0:
-            tmp = self.cfa_operator.matrix_operator @ reduce_dimensions(reduce_dimensions(x))
-            tmp = np.clip(tmp + np.random.normal(0, self.noise_level / 100, self.cfa_operator.matrix_operator.shape[0]), 0, 1)
+        if is_tensor:
+            if self.noise_level != 0:
+                tmp = scipy_sparse_to_pytorch_sparse(self.cfa_operator.matrix_operator, dtype) @ reduce_dims_tensor(reduce_dims_tensor(x))
 
-            if self.binning:
-                return increase_dimensions(self.binning_operator.matrix_operator @ tmp, self.output_size)
+                if dtype:
+                  tmp = torch.clamp(tmp + torch.normal(0, self.noise_level / 100, [self.cfa_operator.matrix_operator.shape[0]]).type(dtype), 0, 1).type(dtype)
 
-            return increase_dimensions(tmp, self.output_size)
+                else:
+                  tmp = torch.clamp(tmp + torch.normal(0, self.noise_level / 100, [self.cfa_operator.matrix_operator.shape[0]]), 0, 1)
 
-        return increase_dimensions(self.matrix_operator @ reduce_dimensions(reduce_dimensions(x)), self.output_size)
+                if self.binning:
+                    return increase_dims_tensor(scipy_sparse_to_pytorch_sparse(self.binning_operator.matrix_operator, dtype) @ tmp, self.output_size)
+
+                return increase_dims_tensor(tmp, self.output_size)
+
+            return increase_dims_tensor(scipy_sparse_to_pytorch_sparse(self.matrix_operator, dtype) @ reduce_dims_tensor(reduce_dims_tensor(x)), self.output_size)
+
+        else:
+            if self.noise_level != 0:
+                tmp = self.cfa_operator.matrix_operator @ reduce_dimensions(reduce_dimensions(x))
+                tmp = np.clip(tmp + np.random.normal(0, self.noise_level / 100, self.cfa_operator.matrix_operator.shape[0]), 0, 1)
+
+                if self.binning:
+                    return increase_dimensions(self.binning_operator.matrix_operator @ tmp, self.output_size)
+
+                return increase_dimensions(tmp, self.output_size)
+
+            return increase_dimensions(self.matrix_operator @ reduce_dimensions(reduce_dimensions(x)), self.output_size)
 
 
     def save_output(self, input_name):
