@@ -64,7 +64,7 @@ def TV_test():
 def forward_test(cfa, binning):
     start = perf_counter()
 
-    operator = Forward_operator(cfa, INPUT_SIZE, SPECTRAL_STENCIL, binning, 0)
+    operator = Forward_operator(cfa, binning, 0, INPUT_SIZE, SPECTRAL_STENCIL)
 
     x = np.random.rand(INPUT_SIZE[0], INPUT_SIZE[1], INPUT_SIZE[2])
     y = np.random.rand(operator.output_size[0],operator.output_size[1])
@@ -96,5 +96,8 @@ def run_adjoint_tests():
 
     binning_test('quad_bayer')
     forward_test('quad_bayer', True)
+
+    cfa_test('sparse_3')
+    forward_test('sparse_3', False)
 
     print(Fore.YELLOW + '########################### End of the adjoint tests ###########################')

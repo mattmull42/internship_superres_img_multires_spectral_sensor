@@ -24,7 +24,7 @@ class Pipeline_v2:
         self.input_size = self.image_forward.shape
         self.noise_level = noise_level
 
-        self.forward_model = Forward_operator(self.cfa, self.input_size, self.spectral_stencil, self.binning, self.noise_level)
+        self.forward_model = Forward_operator(self.cfa, self.binning, self.noise_level, self.input_size, self.spectral_stencil)
         self.forward_model(self.image_forward)
 
         self.inverse_problem = Inverse_problem_ADMM(self.cfa, self.binning, self.noise_level, self.input_size, self.spectral_stencil, self.niter, self.sigma, self.epsilon, self.box_constraint)

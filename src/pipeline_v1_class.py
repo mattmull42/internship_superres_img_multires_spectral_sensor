@@ -20,7 +20,7 @@ class Pipeline_v1:
         self.input_size = self.image_forward.shape
         self.noise_level = noise_level
 
-        self.forward_model = Forward_operator(self.cfa, self.input_size, self.spectral_stencil, self.binning, self.noise_level)
+        self.forward_model = Forward_operator(self.cfa, self.binning, self.noise_level, self.input_size, self.spectral_stencil)
         self.forward_model(self.image_forward)
 
         self.inverse_problem = Inverse_problem(self.cfa, self.binning, self.forward_model.get_parameters())

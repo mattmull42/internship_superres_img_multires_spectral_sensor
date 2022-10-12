@@ -13,7 +13,7 @@ class Inverse_problem_ADMM:
         self.spectral_stencil = spectral_stencil
         self.box_constraint = box_constraint
 
-        self.A = Forward_operator(self.cfa, self.output_size, self.spectral_stencil, self.binning, self.noise_level)
+        self.A = Forward_operator(self.cfa, self.binning, self.noise_level, self.output_size, self.spectral_stencil)
         self.TV = TV_operator(self.output_size)
         self.L = odl.BroadcastOperator(self.A, self.TV)
 

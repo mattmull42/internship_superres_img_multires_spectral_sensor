@@ -20,6 +20,9 @@ class cfa_operator(odl.Operator):
         elif self.cfa == 'quad_bayer':
             self.get_quad_mask()
 
+        elif self.cfa == 'sparse_3':
+            self.get_sparse_3_mask()
+
         self.adjoint_op = cfa_adjoint(self.input_size, self.cfa_mask)
 
 
@@ -64,6 +67,27 @@ class cfa_operator(odl.Operator):
                     self.cfa_mask[i + self.input_size[0] * j, self.k_b] = 1
 
                 else:
+                    self.cfa_mask[i + self.input_size[0] * j, self.k_g] = 1
+
+
+    def get_sparse_3_mask(self):
+        self.cfa_mask = np.full((self.input_size[0] * self.input_size[1], self.input_size[2]), 1 / self.input_size[2])
+
+        for i in range(self.input_size[0]):
+            for j in range(self.input_size[1]):
+                if i % 8 == 0 and j % 8 == 0:
+                    self.cfa_mask[i + self.input_size[0] * j, self.k_r] = 1
+                    self.cfa_mask[i + self.input_size[0] * j, self.k_b] = 0
+                    self.cfa_mask[i + self.input_size[0] * j, self.k_g] = 0
+
+                elif i % 8 == 4 and j % 8 == 4:
+                    self.cfa_mask[i + self.input_size[0] * j, self.k_r] = 0
+                    self.cfa_mask[i + self.input_size[0] * j, self.k_b] = 1
+                    self.cfa_mask[i + self.input_size[0] * j, self.k_g] = 0
+
+                elif (i % 8 == 4 and j % 8 == 0) or (i % 8 == 0 and j % 8 == 4):
+                    self.cfa_mask[i + self.input_size[0] * j, self.k_r] = 0
+                    self.cfa_mask[i + self.input_size[0] * j, self.k_b] = 0
                     self.cfa_mask[i + self.input_size[0] * j, self.k_g] = 1
 
 

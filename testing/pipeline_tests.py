@@ -14,7 +14,7 @@ def run_pipeline_tests(input_paths, noise_level, pipeline_version, pipeline_para
     with open(path.join('output', 'pipeline_log.csv'), 'a') as pipeline_log:
         csv_writer = csv.writer(pipeline_log)
 
-        for cfa, binning in zip(['bayer', 'quad_bayer', 'quad_bayer'], [False, False, True]):
+        for cfa, binning in zip(['bayer', 'quad_bayer', 'quad_bayer', 'sparse_3'], [False, False, True, False]):
             if pipeline_version == 1:
                 pipeline = Pipeline_v1(cfa, binning)
             

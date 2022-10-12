@@ -1,12 +1,12 @@
-from torch import *
+import torch
 
 from src.operators.cfa_operator_class import *
 from src.operators.binning_operator_class import *
 
 
 class Forward_operator(odl.Operator):
-    def __init__(self, cfa, input_size, spectral_stencil, binning, noise_level):
-        check_init_parameters(cfa=cfa)
+    def __init__(self, cfa, binning, noise_level, input_size, spectral_stencil):
+        check_init_parameters(cfa=cfa, binning=binning)
 
         self.cfa = cfa
         self.binning = binning
@@ -85,10 +85,10 @@ class Forward_operator(odl.Operator):
                 tmp = scipy_sparse_to_pytorch_sparse(self.cfa_operator.matrix_operator, dtype) @ reduce_dims_tensor(reduce_dims_tensor(x))
 
                 if dtype:
-                  tmp = torch.clamp(tmp + torch.normal(0, self.noise_level / 100, [self.cfa_operator.matrix_operator.shape[0]]).type(dtype), 0, 1).type(dtype)
+                    tmp = torch.clamp(tmp + torch.normal(0, self.noise_level / 100, [self.cfa_operator.matrix_operator.shape[0]]).type(dtype), 0, 1).type(dtype)
 
                 else:
-                  tmp = torch.clamp(tmp + torch.normal(0, self.noise_level / 100, [self.cfa_operator.matrix_operator.shape[0]]), 0, 1)
+                    tmp = torch.clamp(tmp + torch.normal(0, self.noise_level / 100, [self.cfa_operator.matrix_operator.shape[0]]), 0, 1)
 
                 if self.binning:
                     return increase_dims_tensor(scipy_sparse_to_pytorch_sparse(self.binning_operator.matrix_operator, dtype) @ tmp, self.output_size)

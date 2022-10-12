@@ -19,11 +19,14 @@ def same_size_images(image_1, image_2, ignore_depth=False):
 
 
 def check_init_parameters(cfa=None, binning=None):
-    if cfa and cfa not in ['bayer', 'quad_bayer']:
-            raise Exception('cfa must be bayer, quad_bayer.')
+    if cfa and cfa not in ['bayer', 'quad_bayer', 'sparse_3']:
+            raise Exception(f'cfa must be bayer, quad_bayer or sparse_3, got {cfa}.')
 
     if binning and not isinstance(binning, bool):
-        raise Exception('binning must be a boolean.')
+        raise Exception(f'binning must be a boolean, got {binning}.')
+
+    if binning and cfa != 'quad_bayer':
+        raise Exception(f'binning is only possible with a Quad Bayer CFA, got {cfa}.')
 
 
 def get_inverse_input_path(forward_input_path, cfa, binning, noise_level):
@@ -110,7 +113,7 @@ def increase_dims_tensor(tensor, shape):
 
 def scipy_sparse_to_pytorch_sparse(matrix, dtype=None):
     if dtype:
-      return torch.sparse.FloatTensor(torch.LongTensor(np.vstack((matrix.row, matrix.col))), torch.Tensor(matrix.data), matrix.shape).type(dtype)
+        return torch.sparse.FloatTensor(torch.LongTensor(np.vstack((matrix.row, matrix.col))), torch.Tensor(matrix.data), matrix.shape).type(dtype)
 
     else:
-      return torch.sparse.FloatTensor(torch.LongTensor(np.vstack((matrix.row, matrix.col))), torch.Tensor(matrix.data), matrix.shape)
+        return torch.sparse.FloatTensor(torch.LongTensor(np.vstack((matrix.row, matrix.col))), torch.Tensor(matrix.data), matrix.shape)

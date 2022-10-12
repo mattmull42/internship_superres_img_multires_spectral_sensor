@@ -58,7 +58,7 @@ def forward_test(cfa, binning):
     else:
         postfix = ' without binning.'
 
-    if run_test(Forward_operator(cfa, INPUT_SIZE, SPECTRAL_STENCIL, binning, 0).get_matrix_operator()):
+    if run_test(Forward_operator(cfa, binning, 0, INPUT_SIZE, SPECTRAL_STENCIL).get_matrix_operator()):
         duration = perf_counter() - start
         print(Fore.GREEN + f'Forward operator circulant test passed in {duration:.2f} seconds for the CFA {cfa}' + postfix)
 
@@ -77,5 +77,8 @@ def run_circulant_tests():
 
     binning_test('quad_bayer')
     forward_test('quad_bayer', True)
+
+    cfa_test('sparse_3')
+    forward_test('sparse_3', False)
 
     print(Fore.YELLOW + '########################## End of the circulant tests ##########################')
