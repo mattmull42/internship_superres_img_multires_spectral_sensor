@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import sys
 from os import listdir
 
 from testing.adjoint_tests import *
@@ -19,7 +18,7 @@ BATCH_DIR = 'input_batch'
 BATCH_ARRAY = [path.join(BATCH_DIR, image_name) for image_name in listdir(BATCH_DIR)]
 
 
-def main(argv):
+def main():
     # run_adjoint_tests()
 
     # run_circulant_tests()
@@ -39,7 +38,7 @@ def main(argv):
     baseline_op = Inverse_problem(CFA, BINNING, forward_op.get_parameters())
     # ADMM_op = Inverse_problem_ADMM(CFA, BINNING, 0, x.shape, spectral_stencil, NITER, SIGMA, EPS, BOX_FLAG)
 
-    res = forward_op(x)
+    res = forward_op(x).asarray()
 
     res = baseline_op(res)
 
@@ -62,4 +61,4 @@ def main(argv):
 
 
 if __name__ == "__main__":
-    main(sys.argv)
+    main()

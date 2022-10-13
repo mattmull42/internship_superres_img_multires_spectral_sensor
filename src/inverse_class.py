@@ -22,11 +22,7 @@ class Inverse_problem:
 
 
     def __call__(self, image):
-        if image is not np.ndarray:
-            self.input = image.asarray()
-
-        else:
-            self.input = image
+        self.input = image
 
         if len(self.input.shape) != 2:
             raise Exception('Input must be a 2 dimensional matrix.')
