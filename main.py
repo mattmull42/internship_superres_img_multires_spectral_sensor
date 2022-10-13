@@ -36,13 +36,12 @@ def main(argv):
     x, spectral_stencil = initialize_input('input/01690.png')
 
     forward_op = Forward_operator(CFA, BINNING, 0, x.shape, spectral_stencil)
-    ADMM_op = Inverse_problem_ADMM(CFA, BINNING, 0, x.shape, spectral_stencil, NITER, SIGMA, EPS, BOX_FLAG)
+    baseline_op = Inverse_problem(CFA, BINNING, forward_op.get_parameters())
+    # ADMM_op = Inverse_problem_ADMM(CFA, BINNING, 0, x.shape, spectral_stencil, NITER, SIGMA, EPS, BOX_FLAG)
 
     res = forward_op(x)
-    forward_op.save_output(CFA + '_' + str(BINNING))
 
-    res = ADMM_op(res)
-    ADMM_op.save_output(CFA + '_' + str(BINNING))
+    res = baseline_op(res)
 
     plt.imshow(res)
     plt.show()

@@ -37,7 +37,7 @@ class Inverse_problem_ADMM:
             self.output = x
 
         else:
-            if self.binning:
+            if self.binning and self.cfa == 'quad_bayer':
                 self.output = self.A.adjoint(y) * self.A.binning_factor**2
 
             else:
