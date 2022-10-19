@@ -73,8 +73,8 @@ class cfa_operator(odl.Operator):
     def get_sparse_3_mask(self):
         self.cfa_mask = np.full((self.input_size[0] * self.input_size[1], self.input_size[2]), 1 / self.input_size[2])
 
-        for i in range(self.input_size[0]):
-            for j in range(self.input_size[1]):
+        for i in range(0, self.input_size[0], 4):
+            for j in range(0, self.input_size[1], 4):
                 if i % 8 == 0 and j % 8 == 0:
                     self.cfa_mask[i + self.input_size[0] * j, self.k_r] = 1
                     self.cfa_mask[i + self.input_size[0] * j, self.k_b] = 0

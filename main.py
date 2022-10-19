@@ -32,29 +32,40 @@ def main():
     CFA = 'sparse_3'
     BINNING = CFA == 'quad_bayer'
 
+    from PIL import ImageOps
+
     x, spectral_stencil = initialize_input('input/01690.png')
+    x = initialize_inverse_input('input/ProxOnyx_0.tiff')
+    x = np.array(ImageOps.equalize(Image.fromarray(((x / np.max(x)) * 255).astype(np.uint8)))) / 255
 
-    forward_op = Forward_operator(CFA, BINNING, 0, x.shape, spectral_stencil)
+    input_size = np.append(x.shape, 3)
+    # input_size = x.shape
+
+    forward_op = Forward_operator(CFA, BINNING, 0, input_size, spectral_stencil)
     baseline_op = Inverse_problem(CFA, BINNING, forward_op.get_parameters())
-    # ADMM_op = Inverse_problem_ADMM(CFA, BINNING, 0, x.shape, spectral_stencil, NITER, SIGMA, EPS, BOX_FLAG)
+    admm_op = Inverse_problem_ADMM(CFA, BINNING, 0, input_size, spectral_stencil, NITER, SIGMA, EPS, BOX_FLAG)
 
-    res = forward_op(x).asarray()
+    # res = forward_op(x).asarray()
 
-    res = baseline_op(res)
+    res_baseline = baseline_op(x)
+    res_admm = admm_op(x)
 
-    plt.imshow(res)
-    plt.show()
+    baseline_op.save_output('ProxOnyx_0')
+    admm_op.save_output('ProxOnyx_0')
 
     # gt = np.asarray(Image.open('reu/GT.png')) / 255
+    # baseline = np.asarray(Image.open('reu/baseline.png'))[:, :, :-1] / 255
     # admm = np.asarray(Image.open('reu/ADMM.png'))[:, :, :-1] / 255
     # pipnet_bayer = np.asarray(Image.open('reu/PIPNet bayer weights.png')) / 255
     # pipnet_quad = np.asarray(Image.open('reu/PIPNet quad weights.png')) / 255
 
     # print('SSIM :')
+    # print(f'    Baseline : {structural_similarity(gt, baseline, channel_axis=2):.4f}')
     # print(f'    ADMM : {structural_similarity(gt, admm, channel_axis=2):.4f}')
     # print(f'    PIPNet with bayer weights : {structural_similarity(gt, pipnet_bayer, channel_axis=2):.4f}')
     # print(f'    PIPNet with quad bayer weights : {structural_similarity(gt, pipnet_quad, channel_axis=2):.4f}')
     # print('MSE :')
+    # print(f'    Baseline : {mean_squared_error(gt, baseline):.4f}')
     # print(f'    ADMM : {mean_squared_error(gt, admm):.4f}')
     # print(f'    PIPNet with bayer weights : {mean_squared_error(gt, pipnet_bayer):.4f}')
     # print(f'    PIPNet with quad bayer weights : {mean_squared_error(gt, pipnet_quad):.4f}')

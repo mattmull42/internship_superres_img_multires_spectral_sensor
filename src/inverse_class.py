@@ -1,7 +1,6 @@
 import matplotlib.pyplot as plt
 from scipy import signal
-from scipy import ndimage
-import cv2
+from PIL import Image
 
 from src.utilities.tool_box import *
 from src.utilities.custom_convolution import *
@@ -116,7 +115,7 @@ class Inverse_problem:
 
                 else:
                     if j == 0:
-                        W_HR[i, 0] = (W_HR[i - 1, 0] + W_HR[i - 1, 1] + W_HR[i, j + 1] + W_HR[i - 1, 0] + W_HR[i + 1, j + 1]) / 5
+                        W_HR[i, 0] = (W_HR[i - 1, 0] + W_HR[i - 1, 1] + W_HR[i, 1] + W_HR[i - 1, 0] + W_HR[i + 1, 1]) / 5
 
                     elif (j == 4 * (self.output_size[1] // 4)) and (j == self.output_size[1] - 1):
                         W_HR[i, j] = (W_HR[i - 1, j - 1] + W_HR[i - 1, j] + W_HR[i, j - 1] + W_HR[i + 1, j - 1] + W_HR[i + 1, j]) / 5
@@ -124,21 +123,17 @@ class Inverse_problem:
                     else:
                         W_HR[i, j] = (W_HR[i - 1, j - 1] + W_HR[i - 1, j] + W_HR[i - 1, j + 1] + W_HR[i, j - 1] + W_HR[i, j + 1] + W_HR[i + 1, j - 1] + W_HR[i + 1, j] + W_HR[i + 1, j + 1]) / 8
 
-        RGB_LF_HR = np.repeat(np.repeat(RGB_LR, 4, axis=0), 4, axis=1)
+        RGB_LF_HR = np.array(Image.fromarray((RGB_LR * 255).astype(np.uint8)).resize((4 * RGB_LR.shape[1], 4 * RGB_LR.shape[0]), resample=Image.Resampling.BICUBIC)) / 255
 
-        if self.output_size[0] % 2:
-            RGB_LF_HR = RGB_LF_HR[:-1]
-
-        if self.output_size[1] % 2:
-            RGB_LF_HR = RGB_LF_HR[:, :-1]
-
-        Y_LF_HR = np.average(RGB_LF_HR, axis=2, weights=[0.2126, 0.7152, 0.0722])
+        Y_LF_HR = np.mean(RGB_LF_HR, axis=2)
 
         self.output_demosaicing = np.zeros(self.output_size)
 
-        self.output_demosaicing[:, :, 0] = RGB_LF_HR[:, :, 0] + W_HR[:, :] - Y_LF_HR[:, :]
-        self.output_demosaicing[:, :, 1] = RGB_LF_HR[:, :, 1] + W_HR[:, :] - Y_LF_HR[:, :]
-        self.output_demosaicing[:, :, 2] = RGB_LF_HR[:, :, 2] + W_HR[:, :] - Y_LF_HR[:, :]
+        tmp = W_HR - Y_LF_HR
+
+        self.output_demosaicing[:, :, 0] = RGB_LF_HR[:, :, 0] + tmp
+        self.output_demosaicing[:, :, 1] = RGB_LF_HR[:, :, 1] + tmp
+        self.output_demosaicing[:, :, 2] = RGB_LF_HR[:, :, 2] + tmp
 
         np.clip(self.output_demosaicing, 0, 1, self.output_demosaicing)
 
