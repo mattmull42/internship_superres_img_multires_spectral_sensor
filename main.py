@@ -43,18 +43,17 @@ def main():
 
     forward_op = Forward_operator(CFA, BINNING, 0, input_size, spectral_stencil)
     baseline_op = Inverse_problem(CFA, BINNING, forward_op.get_parameters())
-    admm_op = Inverse_problem_ADMM(CFA, BINNING, 0, input_size, spectral_stencil, NITER, SIGMA, EPS, BOX_FLAG)
+    # admm_op = Inverse_problem_ADMM(CFA, BINNING, 0, input_size, spectral_stencil, NITER, SIGMA, EPS, BOX_FLAG)
 
     res = forward_op(x).asarray()
-
     res_baseline = baseline_op(res)
-    res_admm = admm_op(res)
-
-    plt.imshow(res_admm)
-    plt.show()
+    # res_admm = admm_op(x)
 
     baseline_op.save_output('ProxOnyx_0')
     # admm_op.save_output('ProxOnyx_0')
+
+    plt.imshow(res_baseline)
+    plt.show()
 
     # gt = np.asarray(Image.open('reu/GT.png')) / 255
     # baseline = np.asarray(Image.open('reu/baseline.png'))[:, :, :-1] / 255

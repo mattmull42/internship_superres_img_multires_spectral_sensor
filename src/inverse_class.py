@@ -28,13 +28,13 @@ class Inverse_problem:
 
         if self.binning:
             self.apply_upscaling()
-            self.output_sparse_channel = increase_dimensions(np.transpose(np.transpose(self.cfa_mask) * reduce_dimensions(self.output_upscaling)), self.output_size)
+            self.output_sparse_channel = self.cfa_mask * self.output_upscaling[..., np.newaxis]
 
         else:
             self.output_size = np.append(self.input.shape, 3)
 
             if self.cfa in ['bayer', 'quad_bayer']:
-                self.output_sparse_channel = increase_dimensions(np.transpose(np.transpose(self.cfa_mask) * reduce_dimensions(self.input)), self.output_size)
+                self.output_sparse_channel = self.cfa_mask * self.input[..., np.newaxis]
 
             elif self.cfa == 'sparse_3':
                 self.output_sparse_channel = np.zeros(self.output_size)
@@ -127,13 +127,7 @@ class Inverse_problem:
 
         Y_LF_HR = np.mean(RGB_LF_HR, axis=2)
 
-        self.output_demosaicing = np.zeros(self.output_size)
-
-        tmp = W_HR - Y_LF_HR
-
-        self.output_demosaicing[:, :, 0] = RGB_LF_HR[:, :, 0] + tmp
-        self.output_demosaicing[:, :, 1] = RGB_LF_HR[:, :, 1] + tmp
-        self.output_demosaicing[:, :, 2] = RGB_LF_HR[:, :, 2] + tmp
+        self.output_demosaicing = RGB_LF_HR + (W_HR - Y_LF_HR)[..., np.newaxis]
 
         np.clip(self.output_demosaicing, 0, 1, self.output_demosaicing)
 
