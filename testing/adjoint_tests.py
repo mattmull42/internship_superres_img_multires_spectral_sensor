@@ -5,7 +5,7 @@ from src.forward_operator_class import *
 from src.operators.TV_operator_class import *
 
 
-INPUT_SIZE = (512, 512, 10)
+INPUT_SIZE = (512, 256, 10)
 SPECTRAL_STENCIL = np.linspace(4400, 6500, INPUT_SIZE[2])
 
 

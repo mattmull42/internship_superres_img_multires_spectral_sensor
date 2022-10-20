@@ -12,8 +12,6 @@ class cfa_adjoint(odl.Operator):
 
 
     def _call(self, X):
-        X = X.asarray()
-
-        self.output = increase_dimensions(np.transpose(np.transpose(self.cfa_mask) * reduce_dimensions(X)), self.output_size)
+        self.output = self.cfa_mask * X.asarray()[..., np.newaxis]
 
         return self.output

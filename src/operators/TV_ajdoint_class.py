@@ -16,7 +16,6 @@ class TV_adjoint(odl.Operator):
 
     def _call(self, UG):
         tmp = np.transpose(increase_dimensions(np.transpose(UG.asarray()), np.append(self.output_size, 2)), (3, 0, 1, 2))
-        # tmp = np.transpose(increase_dimensions(increase_dimensions(np.transpose(UG.asarray()), (self.output_size[0] * self.output_size[1], self.output_size[2], 2)), np.append(self.output_size, 2)), (3, 0, 1, 2))
 
         for k in range(self.output_size[2]):
             self.output[:, :, k] = self.grad.adjoint(tmp[:, :, :, k])

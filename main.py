@@ -3,13 +3,13 @@
 from os import listdir
 
 from testing.adjoint_tests import *
-from testing.circulant_test import *
 from testing.batch_tests import *
+from testing.circulant_test import *
 from testing.pipeline_tests import *
 
 
 NOISE_LEVEL = 0
-NITER = 2000
+NITER = 1000
 SIGMA = 50
 EPS = 0.001
 BOX_FLAG = True
@@ -19,7 +19,7 @@ BATCH_ARRAY = [path.join(BATCH_DIR, image_name) for image_name in listdir(BATCH_
 
 
 def main():
-    # run_adjoint_tests()
+    run_adjoint_tests()
 
     # run_circulant_tests()
 
@@ -35,23 +35,26 @@ def main():
     from PIL import ImageOps
 
     x, spectral_stencil = initialize_input('input/01690.png')
-    x = initialize_inverse_input('input/ProxOnyx_0.tiff')
-    x = np.array(ImageOps.equalize(Image.fromarray(((x / np.max(x)) * 255).astype(np.uint8)))) / 255
+    # x = initialize_inverse_input('input/ProxOnyx_0.tiff')
+    # x = np.array(ImageOps.equalize(Image.fromarray(((x / np.max(x)) * 255).astype(np.uint8)))) / 255
 
     input_size = np.append(x.shape, 3)
-    # input_size = x.shape
+    input_size = x.shape
 
     forward_op = Forward_operator(CFA, BINNING, 0, input_size, spectral_stencil)
     baseline_op = Inverse_problem(CFA, BINNING, forward_op.get_parameters())
     admm_op = Inverse_problem_ADMM(CFA, BINNING, 0, input_size, spectral_stencil, NITER, SIGMA, EPS, BOX_FLAG)
 
-    # res = forward_op(x).asarray()
+    res = forward_op(x).asarray()
 
-    res_baseline = baseline_op(x)
-    res_admm = admm_op(x)
+    res_baseline = baseline_op(res)
+    res_admm = admm_op(res)
+
+    plt.imshow(res_admm)
+    plt.show()
 
     baseline_op.save_output('ProxOnyx_0')
-    admm_op.save_output('ProxOnyx_0')
+    # admm_op.save_output('ProxOnyx_0')
 
     # gt = np.asarray(Image.open('reu/GT.png')) / 255
     # baseline = np.asarray(Image.open('reu/baseline.png'))[:, :, :-1] / 255
