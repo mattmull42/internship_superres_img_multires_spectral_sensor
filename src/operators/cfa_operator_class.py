@@ -39,6 +39,7 @@ class cfa_operator(odl.Operator):
 
     def get_bayer_mask(self):
         self.cfa_mask = np.zeros(self.input_size)
+
         self.cfa_mask[::2, 1::2, self.k_r] = 1
         self.cfa_mask[1::2, ::2, self.k_b] = 1
         self.cfa_mask[::2, ::2, self.k_g] = 1
@@ -47,6 +48,7 @@ class cfa_operator(odl.Operator):
 
     def get_quad_mask(self):
         self.cfa_mask = np.zeros(self.input_size)
+
         self.cfa_mask[::4, 2::4, self.k_r] = 1
         self.cfa_mask[::4, 3::4, self.k_r] = 1
         self.cfa_mask[1::4, 2::4, self.k_r] = 1
@@ -69,6 +71,7 @@ class cfa_operator(odl.Operator):
 
     def get_sparse_3_mask(self):
         self.cfa_mask = np.full(self.input_size, 1 / self.input_size[2])
+
         self.cfa_mask[::8, ::8, self.k_r] = 1
         self.cfa_mask[::8, ::8, :self.k_r] = 0
         self.cfa_mask[::8, ::8, self.k_r + 1:] = 0

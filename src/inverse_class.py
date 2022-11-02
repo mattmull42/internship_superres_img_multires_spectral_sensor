@@ -95,35 +95,40 @@ class Inverse_problem:
             for j in range(0, self.output_size[1], 4):
                 if i == 0:
                     if j == 0:
-                        W_HR[0, 0] = (W_HR[0, 1] + W_HR[1, 0] + W_HR[1, 1]) / 3
+                        W_HR[0, 0] = (2 * W_HR[0, 1] + 2 * W_HR[1, 0] + W_HR[1, 1]) / 5
 
                     elif (j == 4 * (self.output_size[1] // 4)) and (j == self.output_size[1] - 1):
-                        W_HR[0, j] = (W_HR[0, j - 1] + W_HR[1, j - 1] + W_HR[1, j]) / 3
+                        W_HR[0, j] = (2 * W_HR[0, j - 1] + W_HR[1, j - 1] + 2 * W_HR[1, j]) / 5
 
                     else:
-                        W_HR[0, j] = (W_HR[0, j - 1] + W_HR[0, j + 1] + W_HR[1, j - 1] + W_HR[1, j] + W_HR[1, j + 1]) / 5
+                        W_HR[0, j] = (2 * W_HR[0, j - 1] + 2 * W_HR[0, j + 1] + W_HR[1, j - 1] + 2 * W_HR[1, j] + W_HR[1, j + 1]) / 8
 
                 elif (i == 4 * (self.output_size[0] // 4)) and (i == self.output_size[0] - 1):
                     if j == 0:
-                        W_HR[i, 0] = (W_HR[i - 1, 0] + W_HR[i - 1, 1] + W_HR[i, 1]) / 3
+                        W_HR[i, 0] = (2 * W_HR[i - 1, 0] + W_HR[i - 1, 1] + 2 * W_HR[i, 1]) / 5
 
                     elif (j == 4 * (self.output_size[1] // 4)) and (j == self.output_size[1] - 1):
-                        W_HR[i, j] = (W_HR[i - 1, j - 1] + W_HR[i - 1, j] + W_HR[i, j - 1]) / 3
+                        W_HR[i, j] = (W_HR[i - 1, j - 1] + 2 * W_HR[i - 1, j] + 2 * W_HR[i, j - 1]) / 5
 
                     else:
-                        W_HR[i, j] = (W_HR[i - 1, j - 1] + W_HR[i - 1, j] + W_HR[i - 1, j + 1] + W_HR[i, j - 1] + W_HR[i, j + 1]) / 5
+                        W_HR[i, j] = (W_HR[i - 1, j - 1] + 2 * W_HR[i - 1, j] + W_HR[i - 1, j + 1] + 2 * W_HR[i, j - 1] + 2 * W_HR[i, j + 1]) / 8
 
                 else:
                     if j == 0:
-                        W_HR[i, 0] = (W_HR[i - 1, 0] + W_HR[i - 1, 1] + W_HR[i, 1] + W_HR[i - 1, 0] + W_HR[i + 1, 1]) / 5
+                        W_HR[i, 0] = (2 * W_HR[i - 1, 0] + W_HR[i - 1, 1] + 2 * W_HR[i, 1] + 2 * W_HR[i - 1, 0] + W_HR[i + 1, 1]) / 8
 
                     elif (j == 4 * (self.output_size[1] // 4)) and (j == self.output_size[1] - 1):
-                        W_HR[i, j] = (W_HR[i - 1, j - 1] + W_HR[i - 1, j] + W_HR[i, j - 1] + W_HR[i + 1, j - 1] + W_HR[i + 1, j]) / 5
+                        W_HR[i, j] = (W_HR[i - 1, j - 1] + 2 * W_HR[i - 1, j] + 2 * W_HR[i, j - 1] + W_HR[i + 1, j - 1] + 2 * W_HR[i + 1, j]) / 8
 
                     else:
-                        W_HR[i, j] = (W_HR[i - 1, j - 1] + W_HR[i - 1, j] + W_HR[i - 1, j + 1] + W_HR[i, j - 1] + W_HR[i, j + 1] + W_HR[i + 1, j - 1] + W_HR[i + 1, j] + W_HR[i + 1, j + 1]) / 8
+                        W_HR[i, j] = (W_HR[i - 1, j - 1] + 2 * W_HR[i - 1, j] + W_HR[i - 1, j + 1] + 2 * W_HR[i, j - 1] + 2 * W_HR[i, j + 1] + W_HR[i + 1, j - 1] + 2 * W_HR[i + 1, j] + W_HR[i + 1, j + 1]) / 12
 
         RGB_LF_HR = np.array(Image.fromarray((RGB_LR * 255).astype(np.uint8)).resize((4 * RGB_LR.shape[1], 4 * RGB_LR.shape[0]), resample=Image.Resampling.BICUBIC)) / 255
+        if W_HR.shape[0] % 4:
+            RGB_LF_HR = RGB_LF_HR[:-(4 - (W_HR.shape[0] % 4))]
+
+        if W_HR.shape[1] % 4:
+            RGB_LF_HR = RGB_LF_HR[:, :-(4 - (W_HR.shape[1] % 4))]
 
         Y_LF_HR = np.mean(RGB_LF_HR, axis=2)
 
