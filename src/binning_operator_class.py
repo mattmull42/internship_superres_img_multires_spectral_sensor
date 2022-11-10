@@ -1,12 +1,11 @@
 import matplotlib.pyplot as plt
 import torch
-from torch.nn.functional import conv2d
 from scipy.sparse import coo_array
 
-from src.operators.binning_adjoint_class import *
+from src.utilities.tool_box import *
 
 
-class binning_operator(odl.Operator):
+class binning_operator():
     def __init__(self, cfa, input_size):
         check_init_parameters(cfa=cfa)
 
@@ -19,18 +18,13 @@ class binning_operator(odl.Operator):
         self.P_i = int(np.ceil(self.input_size[0] / self.l))
         self.P_j = int(np.ceil(self.input_size[1] / self.l))
 
-        odl.Operator.__init__(self, odl.uniform_discr([0, 0], self.input_size, self.input_size), odl.uniform_discr([0, 0], (self.P_i, self.P_j), (self.P_i, self.P_j)))
-
         self.adjoint_op = binning_adjoint(self.input_size, self.l)
 
 
-    def _call(self, X):
-        X = X.asarray()
-        ker = np.ones((2, 2)) / 4
-
+    def __call__(self, X):
         arr = torch.tensor(np.expand_dims(X, axis=(0,1)))
-        arr2 = torch.tensor(np.expand_dims(ker, axis=(0,1)))
-        self.output = conv2d(arr, arr2, stride=2, padding=((self.input_size[0] % 2) * 2, (self.input_size[1] % 2) * 2)).numpy().squeeze()
+        ker = torch.tensor(np.expand_dims(np.ones((2, 2)) / 4, axis=(0,1)))
+        self.output = torch.nn.functional.conv2d(arr, ker, stride=2, padding=((self.input_size[0] % 2) * 2, (self.input_size[1] % 2) * 2)).numpy().squeeze()
 
         if self.input_size[0] % 2:
             self.output = self.output[1:]
@@ -39,11 +33,6 @@ class binning_operator(odl.Operator):
             self.output = self.output[:, 1:]
 
         return self.output
-
-
-    @property
-    def adjoint(self):
-        return self.adjoint_op
 
 
     def get_matrix_operator(self):
@@ -81,3 +70,23 @@ class binning_operator(odl.Operator):
         create_output_dirs()
         file_name = path.basename(path.splitext(input_name)[0]) + '_' + self.cfa + '_binned.png'
         plt.imsave(path.join('output', 'forward_model_outputs', 'output_binning', file_name), self.output, cmap='gray')
+
+
+class binning_adjoint():
+    def __init__(self, output_size, l_GCD):
+        self.output_size = output_size
+        self.l = l_GCD
+        self.P_i = int(np.ceil(self.output_size[0] / self.l))
+        self.P_j = int(np.ceil(self.output_size[1] / self.l))
+
+
+    def __call__(self, X):
+        self.output = np.repeat(np.repeat(X, 2, axis=0), 2, axis=1) / self.l**2
+
+        if self.output_size[0] % 2:
+            self.output = self.output[:-1]
+
+        if self.output_size[1] % 2:
+            self.output = self.output[:, :-1]
+
+        return self.output

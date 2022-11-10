@@ -4,20 +4,27 @@ from PIL import Image
 
 from src.utilities.tool_box import *
 from src.utilities.custom_convolution import *
+from src.utilities.cfa_masks import *
 
 
 class Inverse_problem:
-    def __init__(self, cfa, binning, forward_model_parameters):
+    def __init__(self, cfa, binning, noise_level, output_size, spectral_stencil):
         check_init_parameters(cfa=cfa, binning=binning)
 
         self.cfa = cfa
         self.binning = binning
-        self.cfa_mask = forward_model_parameters[0]
-        self.noise_level = forward_model_parameters[1]
+        self.noise_level = noise_level
+        self.output_size = output_size
+        self.k_r, self.k_g, self.k_b = get_indices_rgb(spectral_stencil)
 
-        if self.binning:
-            self.output_size = np.append(forward_model_parameters[2], 3)
-            self.binning_factor = forward_model_parameters[3]
+        if self.cfa == 'bayer':
+            self.cfa_mask = get_bayer_mask(self.output_size, self.k_r, self.k_g, self.k_b)
+
+        elif self.cfa == 'quad_bayer':
+            self.cfa_mask = get_quad_mask(self.output_size, self.k_r, self.k_g, self.k_b)
+
+        elif self.cfa == 'sparse_3':
+            self.cfa_mask = get_sparse_3_mask(self.output_size, self.k_r, self.k_g, self.k_b)
 
 
     def __call__(self, image):
@@ -31,8 +38,6 @@ class Inverse_problem:
             self.output_sparse_channel = self.cfa_mask * self.output_upscaling[..., np.newaxis]
 
         else:
-            self.output_size = np.append(self.input.shape, 3)
-
             if self.cfa in ['bayer', 'quad_bayer']:
                 self.output_sparse_channel = self.cfa_mask * self.input[..., np.newaxis]
 
@@ -68,7 +73,7 @@ class Inverse_problem:
 
 
     def apply_bayer_demosaicing(self):
-        self.output_demosaicing = np.zeros(self.output_size)
+        self.output_demosaicing = np.empty(self.output_size)
 
         self.output_demosaicing[:, :, 0] = signal.convolve2d(self.output_sparse_channel[:, :, 0], ker_bayer_red_blue, mode='same')
         self.output_demosaicing[:, :, 1] = signal.convolve2d(self.output_sparse_channel[:, :, 1], ker_bayer_green, mode='same')
@@ -76,7 +81,7 @@ class Inverse_problem:
 
 
     def apply_quad_demosaicing(self):
-        self.output_demosaicing = np.zeros(self.output_size)
+        self.output_demosaicing = np.empty(self.output_size)
 
         self.output_demosaicing[:, :, 0] = varying_kernel_convolution(self.output_sparse_channel[:, :, 0], K_list_red)
         self.output_demosaicing[:, :, 1] = varying_kernel_convolution(self.output_sparse_channel[:, :, 1], K_list_green)
@@ -138,13 +143,14 @@ class Inverse_problem:
 
 
     def apply_upscaling(self):
-        self.output_upscaling = np.repeat(np.repeat(self.input, 2, axis=0), 2, axis=1)
+        if self.cfa == 'quad_bayer':
+            self.output_upscaling = np.repeat(np.repeat(self.input, 2, axis=0), 2, axis=1)
 
-        if self.output_size[0] % 2:
-            self.output_upscaling = self.output_upscaling[:-1]
+            if self.output_size[0] % 2:
+                self.output_upscaling = self.output_upscaling[:-1]
 
-        if self.output_size[1] % 2:
-            self.output_upscaling = self.output_upscaling[:, :-1]
+            if self.output_size[1] % 2:
+                self.output_upscaling = self.output_upscaling[:, :-1]
 
 
     def save_output(self, input_name):

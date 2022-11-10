@@ -7,43 +7,31 @@ from src.utilities.errors import *
 
 
 class Pipeline_v1:
-    def __init__(self, cfa, binning):
+    def __init__(self, cfa, binning, noise_level):
         check_init_parameters(cfa=cfa, binning=binning)
 
         self.cfa = cfa
         self.binning = binning
+        self.noise_level = noise_level
 
 
-    def run(self, input_path, noise_level):
+    def run(self, input_path):
         self.input_path_forward = input_path
         self.image_forward, self.spectral_stencil = initialize_input(self.input_path_forward)
         self.input_size = self.image_forward.shape
-        self.noise_level = noise_level
 
-        self.forward_model = Forward_operator(self.cfa, self.binning, self.noise_level, self.input_size, self.spectral_stencil)
+        self.forward_model = forward_operator(self.cfa, self.binning, self.noise_level, self.input_size, self.spectral_stencil)
         self.forward_model(self.image_forward)
 
-        self.inverse_problem = Inverse_problem(self.cfa, self.binning, self.forward_model.get_parameters())
-        self.inverse_problem(self.forward_model.output.asarray())
+        self.inverse_problem = Inverse_problem(self.cfa, self.binning, self.noise_level, self.input_size, self.spectral_stencil)
+        self.inverse_problem(self.forward_model.output)
 
         self.get_errors()
 
 
     def get_errors(self):
-        self.get_mse_errors()
-        self.get_ssim_errors()
-        self.get_image_abs_difference()
-
-
-    def get_mse_errors(self):
-        self.mse_errors = mse_errors(self.image_forward, self.inverse_problem.output, rgb_channels=get_indices_rgb(self.spectral_stencil))
-
-
-    def get_ssim_errors(self):
-        self.ssim_errors = ssim_errors(self.image_forward, self.inverse_problem.output, rgb_channels=get_indices_rgb(self.spectral_stencil))
-
-
-    def get_image_abs_difference(self):
+        self.mse_error = mse_error(self.image_forward, self.inverse_problem.output, rgb_channels=get_indices_rgb(self.spectral_stencil))
+        self.ssim_error = ssim_error(self.image_forward, self.inverse_problem.output, rgb_channels=get_indices_rgb(self.spectral_stencil))
         self.image_abs_difference = image_abs_diff(self.image_forward, self.inverse_problem.output, rgb_channels=get_indices_rgb(self.spectral_stencil))
 
 

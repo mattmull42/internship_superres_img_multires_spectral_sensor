@@ -1,10 +1,8 @@
-import torch
-
-from src.operators.cfa_operator_class import *
-from src.operators.binning_operator_class import *
+from src.cfa_operator_class import *
+from src.binning_operator_class import *
 
 
-class Forward_operator(odl.Operator):
+class forward_operator():
     def __init__(self, cfa, binning, noise_level, input_size, spectral_stencil):
         check_init_parameters(cfa=cfa, binning=binning)
 
@@ -20,20 +18,15 @@ class Forward_operator(odl.Operator):
             self.binning_factor = self.binning_operator.l
             self.output_size = self.binning_operator.P_i, self.binning_operator.P_j
 
+            self.adjoint_op = forward_adjoint(self.cfa_operator.adjoint_op, self.binning_operator.adjoint_op)
+
         else:
             self.output_size = self.input_size[:2]
 
-        if self.binning:
-            if self.cfa == 'quad_bayer':
-                self.adjoint_op = odl.OperatorComp(self.cfa_operator.adjoint, self.binning_operator.adjoint)
-
-        else:
-            self.adjoint_op = self.cfa_operator.adjoint
-
-        odl.Operator.__init__(self, odl.uniform_discr([0, 0, 0], self.input_size, self.input_size), odl.uniform_discr([0, 0], self.output_size, self.output_size))
+            self.adjoint_op = forward_adjoint(self.cfa_operator.adjoint_op, None)
 
 
-    def _call(self, Ux):
+    def __call__(self, Ux):
         self.output = self.cfa_operator(Ux)
         
         if self.noise_level != 0:
@@ -46,21 +39,13 @@ class Forward_operator(odl.Operator):
         return self.output
 
 
-    @property
-    def adjoint(self):
-        return self.adjoint_op
-
-
     def add_noise(self):
         self.output = np.clip(self.output + np.random.normal(0, self.noise_level / 100, self.output.shape), 0, 1)
 
 
     def get_parameters(self):
         if self.binning:
-            return self.cfa_operator.cfa_mask, self.noise_level, self.input_size[:2], self.binning_factor
-
-        else:
-            return self.cfa_operator.cfa_mask, self.noise_level
+            return self.binning_factor
 
 
     def get_matrix_operator(self, is_tensor=False):
@@ -124,3 +109,19 @@ class Forward_operator(odl.Operator):
             file_name = path.basename(path.splitext(input_name)[0]) + f'_noise_{self.noise_level}_' + self.cfa + '.png'
 
         plt.imsave(path.join('output', 'forward_model_outputs', file_name), self.output, cmap='gray')
+
+
+class forward_adjoint():
+    def __init__(self, cfa_adjoint_op, binning_adjoint_op):
+        self.cfa_adjoint_op = cfa_adjoint_op
+        self.binning_adjoint_op = binning_adjoint_op
+
+
+    def __call__(self, X):
+        if self.binning_adjoint_op:
+            self.output = self.cfa_adjoint_op(self.binning_adjoint_op(X))
+
+        else:
+            self.output = self.cfa_adjoint_op(X)
+
+        return self.output

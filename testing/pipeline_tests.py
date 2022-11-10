@@ -16,14 +16,14 @@ def run_pipeline_tests(input_paths, noise_level, pipeline_version, pipeline_para
 
         for cfa, binning in zip(['bayer', 'quad_bayer', 'quad_bayer', 'sparse_3'], [False, False, True, False]):
             if pipeline_version == 1:
-                pipeline = Pipeline_v1(cfa, binning)
+                pipeline = Pipeline_v1(cfa, binning, noise_level)
             
             elif pipeline_version == 2:
-                pipeline = Pipeline_v2(cfa, binning, pipeline_parameters[0], pipeline_parameters[1], pipeline_parameters[2], pipeline_parameters[3])
+                pipeline = Pipeline_v2(cfa, binning, noise_level, pipeline_parameters[0], pipeline_parameters[1])
 
             for input_path in input_paths:
                 start = perf_counter()
-                pipeline.run(input_path, noise_level)
+                pipeline.run(input_path)
                 duration = perf_counter() - start
 
                 pipeline.save_output()
@@ -36,9 +36,9 @@ def run_pipeline_tests(input_paths, noise_level, pipeline_version, pipeline_para
 
                 print(Fore.GREEN + prefix + f' pipeline v{pipeline_version} test passed in {duration:.2f} seconds on image {input_path}.')
 
-                mse = pipeline.mse_errors
-                ssim = pipeline.ssim_errors
-                csv_writer.writerow([datetime.now().strftime("%Y-%m-%d %H:%M:%S"), cfa, binning, noise_level, f'Pipeline v{pipeline_version}', input_path, f'{duration:.2f}', f'{np.mean(mse):.4f}', f'{np.mean(ssim):.4f}'] + mse + ssim)
+                mse = pipeline.mse_error
+                ssim = pipeline.ssim_error
+                csv_writer.writerow([datetime.now().strftime("%Y-%m-%d %H:%M:%S"), cfa, binning, noise_level, f'Pipeline v{pipeline_version}', input_path, f'{duration:.2f}', f'{mse:.4f}', f'{ssim:.4f}'])
 
         csv_writer.writerow([])
 

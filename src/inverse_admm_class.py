@@ -1,58 +1,28 @@
+from proximal import *
+
 from src.forward_operator_class import *
-from src.operators.TV_operator_class import *
 
 
 class Inverse_problem_ADMM:
-    def __init__(self, cfa, binning, noise_level, output_size, spectral_stencil, niter, sigma, eps, box_constraint):
+    def __init__(self, cfa, binning, noise_level, output_size, spectral_stencil, max_iter, eps):
         check_init_parameters(cfa=cfa, binning=binning)
 
-        self.cfa = cfa
-        self.binning = binning
-        self.noise_level = noise_level
         self.output_size = output_size
-        self.spectral_stencil = spectral_stencil
-        self.box_constraint = box_constraint
-
-        self.A = Forward_operator(self.cfa, self.binning, self.noise_level, self.output_size, self.spectral_stencil)
-        self.TV = TV_operator(self.output_size)
-        self.L = odl.BroadcastOperator(self.A, self.TV)
-
-        self.sigma = sigma
+        self.max_iter = max_iter
         self.eps = eps
 
-        self.f = odl.solvers.IndicatorBox(self.L.domain, 0, 1)
-
-        if self.box_constraint:
-            self.op_norm = 1.1 * odl.power_method_opnorm(self.L, maxiter=50)
-            self.tau = self.sigma / self.op_norm ** 2
-
-        else:
-            self.tau = 1
-
-        self.niter = niter
+        self.forward_op = forward_operator(cfa, binning, noise_level, output_size, spectral_stencil)
 
 
-    def __call__(self, y, x=None):
-        if x is not None:
-            self.output = x
+    def __call__(self, y):
+        x = Variable(self.output_size)
 
-        else:
-            if self.binning and self.cfa == 'quad_bayer':
-                self.output = self.A.adjoint(y) * self.A.binning_factor**2
+        problem = Problem(sum_squares(forward_operator_proximal(self.forward_op, x) - y) + self.eps * group_norm1(grad(x, dims=2), group_dims=[2]))
+        problem.solve(solver='admm', max_iters=self.max_iter)
 
-            else:
-                self.output = self.A.adjoint(y)
+        np.clip(x.value, 0, 1, x.value)
 
-        self.data_fit = odl.solvers.L2NormSquared(self.A.range).translated(y)
-        self.reg_func = self.eps * odl.solvers.GroupL1Norm(self.TV.range, exponent=2)
-        self.g = odl.solvers.SeparableSum(self.data_fit, self.reg_func)
-
-        odl.solvers.admm_linearized(self.output, self.f, self.g, self.L, self.tau, self.sigma, self.niter)
-
-        self.output = self.output.asarray()
-
-        if not self.box_constraint:
-            np.clip(self.output, 0, 1, self.output)
+        self.output = x.value
 
         return self.output
 
@@ -63,3 +33,18 @@ class Inverse_problem_ADMM:
         input_name_without_extension = path.basename(path.splitext(input_name)[0])
 
         plt.imsave(path.join(output_dir, input_name_without_extension + '_reconstructed_ADMM.png'), self.output)
+
+
+class forward_operator_proximal(lin_ops.lin_op.LinOp):
+    def __init__(self, forward_op, Ux):
+        self.forward_op = forward_op
+
+        super(forward_operator_proximal, self).__init__([Ux], self.forward_op.output_size, None)
+
+
+    def forward(self, x, y):
+        np.copyto(y[0], self.forward_op(x[0]))
+
+
+    def adjoint(self, u, v):
+        np.copyto(v[0], self.forward_op.adjoint_op(u[0]))

@@ -29,8 +29,8 @@ The user has 2 different inversion strategies the sequential and joint approach.
 
 For the first one the class is ```Inverse_problem(cfa, binning, forward_model.get_parameters())``` where ```forward_model.get_parameters()``` are some information about the forward operator.
 
-For the second one the class is ```Inverse_problem_ADMM(cfa, binning, noise_level, input_size, spectral_stencil, niter, sigma, epsilon, box_constraint)```, where :
-* ```niter``` the number of iterations of the solver;
+For the second one the class is ```Inverse_problem_ADMM(cfa, binning, noise_level, input_size, spectral_stencil, max_iter, sigma, epsilon, box_constraint)```, where :
+* ```max_iter``` the number of iterations of the solver;
 * ```sigma``` the proximal step of the g function;
 * ```epsilon``` the weight for the regularizer term.
 

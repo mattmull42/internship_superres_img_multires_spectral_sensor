@@ -45,7 +45,7 @@ def create_output_dirs():
     if not path.isfile(path.join('output', 'pipeline_log.csv')):
         with open(path.join('output', 'pipeline_log.csv'), 'w') as pipeline_log:
             csv_writer = csv.writer(pipeline_log)
-            csv_writer.writerow(['Date', 'CFA', 'Binning', 'Noise level', 'Pipeline', 'Name', 'Elapsed time (s)', 'MSE', 'SSIM', 'MSE red', 'MSE green', 'MSE blue', 'SSIM red', 'SSIM green', 'SSIM blue'])
+            csv_writer.writerow(['Date', 'CFA', 'Binning', 'Noise level', 'Pipeline', 'Name', 'Elapsed time (s)', 'MSE', 'SSIM'])
 
     if not path.isfile(path.join('output', 'batch_log.csv')):
         with open(path.join('output', 'batch_log.csv'), 'w') as batch_log:
