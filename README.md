@@ -13,11 +13,12 @@ If the user wants to load an image for the inverse problem it is possible to use
 ## Forward operator
 
 To initialize a forward operator the user has to declare an instance of the ```Forward_operator```:
-```f = Forward_operator(cfa, input_size, spectral_stencil, binning, noise_level)```, with :
-* ```cfa``` being either ```bayer```'' or ```quad-bayer```;
+```f = Forward_operator(cfa, binning, noise_level, input_size, spectral_stencil)```, with :
+* ```cfa``` being either ```bayer```, ```quad-bayer``` or ```sparse_3```;
+* ```binning``` a boolean indicating if the forward model applies binning or not;
+* ```noise_level``` the noise to apply to the acquisition;
 * ```input_size``` the shape of the image;
-* ```spectral_stencil``` the array presented above;
-* ```noise_level``` the noise to apply to the acquisition.
+* ```spectral_stencil``` the array presented above.
 
 After that the user can apply the operator to an image like : ```y = f(x)``` where ```x``` is the input image.
 
@@ -27,11 +28,10 @@ Finally the user can save the images in the output folder with : ```f.save_outpu
 
 The user has 2 different inversion strategies the sequential and joint approach.
 
-For the first one the class is ```Inverse_problem(cfa, binning, forward_model.get_parameters())``` where ```forward_model.get_parameters()``` are some information about the forward operator.
+For the first one the class is ```Inverse_problem(cfa, binning, noise_level, input_size, spectral_stencil)```.
 
-For the second one the class is ```Inverse_problem_ADMM(cfa, binning, noise_level, input_size, spectral_stencil, max_iter, sigma, epsilon, box_constraint)```, where :
+For the second one the class is ```Inverse_problem_ADMM(cfa, binning, noise_level, input_size, spectral_stencil, max_iter, epsilon)```, where :
 * ```max_iter``` the number of iterations of the solver;
-* ```sigma``` the proximal step of the g function;
 * ```epsilon``` the weight for the regularizer term.
 
 In both cases the user can apply the inversion in the same way as for the forward operator and save the output equally.
