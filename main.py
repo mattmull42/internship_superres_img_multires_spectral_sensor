@@ -11,8 +11,8 @@ from testing.pipeline_tests import *
 INPUT_DIR = 'input/'
 BATCH_ARRAY = [path.join('input_batch/', image_name) for image_name in listdir('input_batch/')]
 
-CFA = 'bayer'
-BINNING = CFA == 'quad_bayer'
+CFA = 'quad_bayer'
+BINNING = CFA == 'quad_bayera'
 NOISE_LEVEL = 0
 MAX_ITER = 500
 EPS = 0.001
@@ -55,9 +55,9 @@ res_admm = admm_op(acq)
 print(f'MSE :  {mse_error(x, res_admm):.4f}')
 print(f'SSIM : {ssim_error(x, res_admm):.4f}')
 
-# # plt.imshow(acq, cmap='gray')
-# # plt.show()
-# # plt.imshow(res_baseline)
-# # plt.show()
-# plt.imshow(res_admm)
+# plt.imshow(acq, cmap='gray')
 # plt.show()
+# plt.imshow(res_baseline)
+# plt.show()
+plt.imshow(res_admm)
+plt.show()
