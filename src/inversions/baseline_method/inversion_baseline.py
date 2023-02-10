@@ -1,16 +1,16 @@
-import matplotlib.pyplot as plt
 from scipy import signal
 from PIL import Image
 
-from src.utilities.tool_box import *
-from src.utilities.custom_convolution import *
-from src.utilities.cfa_masks import *
+from .custom_convolution import *
+from src.forward_operator.forward_operator import *
+
+
+def get_indices_rgb(spectral_stencil):
+    return (np.abs(spectral_stencil - 6500)).argmin(), (np.abs(spectral_stencil - 5500)).argmin(), (np.abs(spectral_stencil - 4450)).argmin()
 
 
 class Inverse_problem:
     def __init__(self, cfa, binning, noise_level, output_size, spectral_stencil):
-        check_init_parameters(cfa=cfa, binning=binning)
-
         self.cfa = cfa
         self.binning = binning
         self.noise_level = noise_level
@@ -48,15 +48,11 @@ class Inverse_problem:
                 self.output_sparse_channel[:, :, 2] = self.input
 
                 self.output_sparse_channel[::8, ::8, 1:3] = 0
-                self.output_sparse_channel[::8, ::8, 0] = self.input[::8, ::8]
 
                 self.output_sparse_channel[::8, 4::8, ::2] = 0
-                self.output_sparse_channel[::8, 4::8, 1] = self.input[::8, 4::8]
                 self.output_sparse_channel[4::8, ::8, ::2] = 0
-                self.output_sparse_channel[4::8, ::8, 1] = self.input[4::8, ::8]
 
                 self.output_sparse_channel[4::8, 4::8, 0:2] = 0
-                self.output_sparse_channel[4::8, 4::8, 2] = self.input[4::8, 4::8]
 
         if self.cfa == 'bayer':
             self.apply_bayer_demosaicing()
@@ -100,35 +96,36 @@ class Inverse_problem:
             for j in range(0, self.output_size[1], 4):
                 if i == 0:
                     if j == 0:
-                        W_HR[0, 0] = (2 * W_HR[0, 1] + 2 * W_HR[1, 0] + W_HR[1, 1]) / 5
+                        W_HR[0, 0] = (2 * self.input[0, 1] + 2 * self.input[1, 0] + self.input[1, 1]) / 5
 
                     elif (j == 4 * (self.output_size[1] // 4)) and (j == self.output_size[1] - 1):
-                        W_HR[0, j] = (2 * W_HR[0, j - 1] + W_HR[1, j - 1] + 2 * W_HR[1, j]) / 5
+                        W_HR[0, j] = (2 * self.input[0, j - 1] + self.input[1, j - 1] + 2 * self.input[1, j]) / 5
 
                     else:
-                        W_HR[0, j] = (2 * W_HR[0, j - 1] + 2 * W_HR[0, j + 1] + W_HR[1, j - 1] + 2 * W_HR[1, j] + W_HR[1, j + 1]) / 8
+                        W_HR[0, j] = (2 * self.input[0, j - 1] + 2 * self.input[0, j + 1] + self.input[1, j - 1] + 2 * self.input[1, j] + self.input[1, j + 1]) / 8
 
                 elif (i == 4 * (self.output_size[0] // 4)) and (i == self.output_size[0] - 1):
                     if j == 0:
-                        W_HR[i, 0] = (2 * W_HR[i - 1, 0] + W_HR[i - 1, 1] + 2 * W_HR[i, 1]) / 5
+                        W_HR[i, 0] = (2 * self.input[i - 1, 0] + self.input[i - 1, 1] + 2 * self.input[i, 1]) / 5
 
                     elif (j == 4 * (self.output_size[1] // 4)) and (j == self.output_size[1] - 1):
-                        W_HR[i, j] = (W_HR[i - 1, j - 1] + 2 * W_HR[i - 1, j] + 2 * W_HR[i, j - 1]) / 5
+                        W_HR[i, j] = (self.input[i - 1, j - 1] + 2 * self.input[i - 1, j] + 2 * self.input[i, j - 1]) / 5
 
                     else:
-                        W_HR[i, j] = (W_HR[i - 1, j - 1] + 2 * W_HR[i - 1, j] + W_HR[i - 1, j + 1] + 2 * W_HR[i, j - 1] + 2 * W_HR[i, j + 1]) / 8
+                        W_HR[i, j] = (self.input[i - 1, j - 1] + 2 * self.input[i - 1, j] + self.input[i - 1, j + 1] + 2 * self.input[i, j - 1] + 2 * self.input[i, j + 1]) / 8
 
                 else:
                     if j == 0:
-                        W_HR[i, 0] = (2 * W_HR[i - 1, 0] + W_HR[i - 1, 1] + 2 * W_HR[i, 1] + 2 * W_HR[i - 1, 0] + W_HR[i + 1, 1]) / 8
+                        W_HR[i, 0] = (2 * self.input[i - 1, 0] + self.input[i - 1, 1] + 2 * self.input[i, 1] + 2 * self.input[i - 1, 0] + self.input[i + 1, 1]) / 8
 
                     elif (j == 4 * (self.output_size[1] // 4)) and (j == self.output_size[1] - 1):
-                        W_HR[i, j] = (W_HR[i - 1, j - 1] + 2 * W_HR[i - 1, j] + 2 * W_HR[i, j - 1] + W_HR[i + 1, j - 1] + 2 * W_HR[i + 1, j]) / 8
+                        W_HR[i, j] = (self.input[i - 1, j - 1] + 2 * self.input[i - 1, j] + 2 * self.input[i, j - 1] + self.input[i + 1, j - 1] + 2 * self.input[i + 1, j]) / 8
 
                     else:
-                        W_HR[i, j] = (W_HR[i - 1, j - 1] + 2 * W_HR[i - 1, j] + W_HR[i - 1, j + 1] + 2 * W_HR[i, j - 1] + 2 * W_HR[i, j + 1] + W_HR[i + 1, j - 1] + 2 * W_HR[i + 1, j] + W_HR[i + 1, j + 1]) / 12
+                        W_HR[i, j] = (self.input[i - 1, j - 1] + 2 * self.input[i - 1, j] + self.input[i - 1, j + 1] + 2 * self.input[i, j - 1] + 2 * self.input[i, j + 1] + self.input[i + 1, j - 1] + 2 * self.input[i + 1, j] + self.input[i + 1, j + 1]) / 12
 
-        RGB_LF_HR = np.array(Image.fromarray((RGB_LR * 255).astype(np.uint8)).resize((4 * RGB_LR.shape[1], 4 * RGB_LR.shape[0]), resample=Image.Resampling.BICUBIC)) / 255
+        RGB_LF_HR = np.array(Image.fromarray((RGB_LR * 255).astype(np.uint8)).resize((4 * RGB_LR.shape[1], 4 * RGB_LR.shape[0]))) / 255
+
         if W_HR.shape[0] % 4:
             RGB_LF_HR = RGB_LF_HR[:-(4 - (W_HR.shape[0] % 4))]
 
@@ -151,18 +148,3 @@ class Inverse_problem:
 
             if self.output_size[1] % 2:
                 self.output_upscaling = self.output_upscaling[:, :-1]
-
-
-    def save_output(self, input_name):
-        create_output_dirs()
-        output_dir = path.join('output', 'inverse_problem_outputs')
-        input_name_without_extension = path.basename(path.splitext(input_name)[0])
-
-        if not self.binning:
-            plt.imsave(path.join(output_dir, 'output_demosaicing', input_name_without_extension + '_demosaiced.png'), self.output_demosaicing)
-            plt.imsave(path.join(output_dir, input_name_without_extension + '_reconstructed.png'), self.output)
-
-        else:
-            plt.imsave(path.join(output_dir, 'output_unbinned', input_name_without_extension + '_unbinned.png'), self.output_upscaling, cmap='gray')
-            plt.imsave(path.join(output_dir, 'output_demosaicing', input_name_without_extension + '_demosaiced.png'), self.output_demosaicing)
-            plt.imsave(path.join(output_dir, input_name_without_extension + '_reconstructed.png'), self.output)

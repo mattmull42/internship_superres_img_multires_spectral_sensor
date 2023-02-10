@@ -1,14 +1,10 @@
-import matplotlib.pyplot as plt
 import torch
-from scipy.sparse import coo_array
-
-from src.utilities.tool_box import *
+from scipy.sparse import csc_array
+import numpy as np
 
 
 class binning_operator():
     def __init__(self, cfa, input_size):
-        check_init_parameters(cfa=cfa)
-
         self.cfa = cfa
         self.input_size = input_size
 
@@ -18,11 +14,9 @@ class binning_operator():
         self.P_i = int(np.ceil(self.input_size[0] / self.l))
         self.P_j = int(np.ceil(self.input_size[1] / self.l))
 
-        self.adjoint_op = binning_adjoint(self.input_size, self.l)
 
-
-    def __call__(self, X):
-        arr = torch.tensor(np.expand_dims(X, axis=(0,1)))
+    def __call__(self, x):
+        arr = torch.tensor(np.expand_dims(x, axis=(0,1)))
         ker = torch.tensor(np.expand_dims(np.ones((2, 2)) / 4, axis=(0,1)))
         self.output = torch.nn.functional.conv2d(arr, ker, stride=2, padding=((self.input_size[0] % 2) * 2, (self.input_size[1] % 2) * 2)).numpy().squeeze()
 
@@ -35,8 +29,20 @@ class binning_operator():
         return self.output
 
 
-    def get_matrix_operator(self):
-        if not hasattr(self, 'matrix_operator'):
+    def adjoint(self, y):
+        self.adjoint_output = np.repeat(np.repeat(y, 2, axis=0), 2, axis=1) / self.l**2
+
+        if self.input_size[0] % 2:
+            self.adjoint_output = self.adjoint_output[:-1]
+
+        if self.input_size[1] % 2:
+            self.adjoint_output = self.adjoint_output[:, :-1]
+
+        return self.adjoint_output
+
+
+    def get_matrix(self):
+        if not hasattr(self, 'matrix'):
             N_ij = self.input_size[0] * self.input_size[1]
 
             if self.cfa == 'quad_bayer':
@@ -61,32 +67,6 @@ class binning_operator():
 
                 binning_data = np.ones_like(binning_i) / 4
 
-            self.matrix_operator = coo_array((binning_data, (binning_i, binning_j)), shape=(P_ij, N_ij))
+            self.matrix = csc_array((binning_data, (binning_i, binning_j)), shape=(P_ij, N_ij))
 
-        return self.matrix_operator
-
-
-    def save_output(self, input_name):
-        create_output_dirs()
-        file_name = path.basename(path.splitext(input_name)[0]) + '_' + self.cfa + '_binned.png'
-        plt.imsave(path.join('output', 'forward_model_outputs', 'output_binning', file_name), self.output, cmap='gray')
-
-
-class binning_adjoint():
-    def __init__(self, output_size, l_GCD):
-        self.output_size = output_size
-        self.l = l_GCD
-        self.P_i = int(np.ceil(self.output_size[0] / self.l))
-        self.P_j = int(np.ceil(self.output_size[1] / self.l))
-
-
-    def __call__(self, X):
-        self.output = np.repeat(np.repeat(X, 2, axis=0), 2, axis=1) / self.l**2
-
-        if self.output_size[0] % 2:
-            self.output = self.output[:-1]
-
-        if self.output_size[1] % 2:
-            self.output = self.output[:, :-1]
-
-        return self.output
+        return self.matrix
