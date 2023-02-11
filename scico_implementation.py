@@ -21,7 +21,7 @@ INPUT_DIR = 'input/'
 CFA = 'sparse_3'
 BINNING = CFA == 'quad_bayer'
 NOISE_LEVEL = 0
-MAX_ITER = 100
+MAX_ITER = 400
 
 
 #######################################
@@ -57,7 +57,9 @@ f = loss.SquaredL2Loss(y=acq, A=A)
 #######################################
 
 baseline_inverse = Inverse_problem(CFA, BINNING, NOISE_LEVEL, input_size, spectral_stencil)
+start = perf_counter()
 x_baseline = jnp.array(baseline_inverse(np.array(acq)))
+mid_1 = perf_counter()
 
 
 #######################################
@@ -76,7 +78,7 @@ solver_ADMM = ADMM(
     g_list=[g],
     C_list=[C],
     rho_list=[rho],
-    x0=adjoint_pass(acq),
+    x0=x_baseline,
     maxiter=MAX_ITER,
     subproblem_solver=LinearSubproblemSolver(cg_kwargs={'tol': 1e-3, 'maxiter': 100})
 )
@@ -101,7 +103,7 @@ solver_LADMM = LinearizedADMM(
     C=C,
     nu=nu,
     mu=mu,
-    x0=adjoint_pass(acq),
+    x0=x_baseline,
     maxiter=MAX_ITER
 )
 
@@ -125,7 +127,7 @@ solver_PDHG = PDHG(
     C=C,
     tau=tau,
     sigma=sigma,
-    x0=adjoint_pass(acq),
+    x0=x_baseline,
     maxiter=MAX_ITER
 )
 
@@ -136,10 +138,10 @@ solver_PDHG = PDHG(
 
 eps = 5e-2
 
-g = eps * 6.1e-2 * functional.BM3D(is_rgb=True)
+g = eps * 6e-2 * functional.BM3D(is_rgb=True)
 C = linop.Identity(input_shape=input_size)
 
-rho = 1.5 * eps * 10**-1
+rho = 2 * eps * 10**-1
 
 solver_BM3D = ADMM(
     f=f,
@@ -147,7 +149,7 @@ solver_BM3D = ADMM(
     C_list=[C],
     rho_list=[rho],
     x0=x_baseline,
-    maxiter=MAX_ITER // 10,
+    maxiter=MAX_ITER // 20,
     subproblem_solver=LinearSubproblemSolver(cg_kwargs={'tol': 1e-3, 'maxiter': 100})
 )
 
@@ -169,25 +171,25 @@ solver_DnCNN = ADMM(
     C_list=[C],
     rho_list=[rho],
     x0=x_baseline,
-    maxiter=MAX_ITER // 5,
-    subproblem_solver=LinearSubproblemSolver(cg_kwargs={'tol': 1e-3, 'maxiter': 100}),
-    itstat_options={'display': True, 'period': 10}
+    maxiter=MAX_ITER // 20,
+    subproblem_solver=LinearSubproblemSolver(cg_kwargs={'tol': 1e-3, 'maxiter': 100})
 )
 
 
 #######################################
 # Solving the problems
 #######################################
-# start = perf_counter()
-# x_ADMM = solver_ADMM.solve()
-# mid_1 = perf_counter()
-# x_LADMM = solver_LADMM.solve()
-# mid_2 = perf_counter()
-# x_PDHG = solver_PDHG.solve()
-# mid_3 = perf_counter()
-# x_BM3D = solver_BM3D.solve()
+
+mid_2 = perf_counter()
+x_ADMM = np.abs(gt - solver_ADMM.solve())
+mid_3 = perf_counter()
+x_LADMM = np.abs(gt - solver_LADMM.solve())
 mid_4 = perf_counter()
-x_DnCNN = solver_DnCNN.solve()
+x_PDHG = np.abs(gt - solver_PDHG.solve())
+mid_5 = perf_counter()
+# x_BM3D = solver_BM3D.solve()
+mid_6 = perf_counter()
+x_DnCNN = np.abs(gt - solver_DnCNN.solve())
 end = perf_counter()
 
 
@@ -201,15 +203,15 @@ ax[0][0].set_title('Reference')
 ax[0][1].imshow(acq, cmap='gray')
 ax[0][1].set_title(f'Raw image')
 ax[0][2].imshow(x_baseline)
-ax[0][2].set_title(f'Baseline: {metric.psnr(gt, x_baseline):.2f} (dB)')
-# ax[0][3].imshow(x_ADMM)
-# ax[0][3].set_title(f'TV ADMM: {metric.psnr(gt, x_ADMM):.2f} (dB), {mid_1 - start:.1f}s')
-# ax[1][0].imshow(x_LADMM)
-# ax[1][0].set_title(f'TV LADMM: {metric.psnr(gt, x_LADMM):.2f} (dB), {mid_2 - mid_1:.1f}s')
-# ax[1][1].imshow(x_PDHG)
-# ax[1][1].set_title(f'PDHG: {metric.psnr(gt, x_PDHG):.2f} (dB), {mid_3 - mid_2:.1f}s')
+ax[0][2].set_title(f'Baseline: {metric.psnr(gt, x_baseline):.2f}, {mid_1 - start:.1f}s')
+ax[0][3].imshow(x_ADMM)
+ax[0][3].set_title(f'TV ADMM: {metric.psnr(gt, x_ADMM):.2f} (dB), {mid_3 - mid_2:.1f}s')
+ax[1][0].imshow(x_LADMM)
+ax[1][0].set_title(f'TV LADMM: {metric.psnr(gt, x_LADMM):.2f} (dB), {mid_4 - mid_3:.1f}s')
+ax[1][1].imshow(x_PDHG)
+ax[1][1].set_title(f'TV PDHG: {metric.psnr(gt, x_PDHG):.2f} (dB), {mid_5 - mid_4:.1f}s')
 # ax[1][2].imshow(x_BM3D)
-# ax[1][2].set_title(f'BM3D PnP ADMM: {metric.psnr(gt, x_BM3D):.2f} (dB), {mid_4 - mid_3:.1f}s')
+# ax[1][2].set_title(f'BM3D PnP ADMM: {metric.psnr(gt, x_BM3D):.2f} (dB), {mid_6 - mid_5:.1f}s')
 ax[1][3].imshow(x_DnCNN)
-ax[1][3].set_title(f'DnCNN PnP ADMM: {metric.psnr(gt, x_DnCNN):.2f} (dB), {end - mid_4:.1f}s')
+ax[1][3].set_title(f'DnCNN PnP ADMM: {metric.psnr(gt, x_DnCNN):.2f} (dB), {end - mid_6:.1f}s')
 plt.show()
