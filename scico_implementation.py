@@ -30,12 +30,10 @@ MAX_ITER = 400
 
 input_name = '01690'
 gt, spectral_stencil = initialize_input(INPUT_DIR + input_name + '.png')
-gt = jnp.array(gt)
-input_size = gt.shape
 
-forward_op = forward_operator(CFA, BINNING, NOISE_LEVEL, input_size, spectral_stencil)
+forward_op = forward_operator(CFA, BINNING, NOISE_LEVEL, gt.shape, spectral_stencil)
 
-acq = jnp.array(forward_op(gt))
+acq = forward_op(gt)
 
 
 #######################################
@@ -48,17 +46,17 @@ def forward_pass(x):
 def adjoint_pass(y):
     return jnp.array(forward_op.adjoint(y))
 
-A = linop.LinearOperator(input_shape=input_size, output_shape=acq.shape, eval_fn=forward_pass, adj_fn=adjoint_pass)
-f = loss.SquaredL2Loss(y=acq, A=A)
+A = linop.LinearOperator(input_shape=gt.shape, output_shape=acq.shape, eval_fn=forward_pass, adj_fn=adjoint_pass)
+f = loss.SquaredL2Loss(y=jnp.array(acq), A=A)
 
 
 #######################################
 # Baseline method
 #######################################
 
-baseline_inverse = Inverse_problem(CFA, BINNING, NOISE_LEVEL, input_size, spectral_stencil)
+baseline_inverse = Inverse_problem(CFA, BINNING, NOISE_LEVEL, gt.shape, spectral_stencil)
 start = perf_counter()
-x_baseline = jnp.array(baseline_inverse(np.array(acq)))
+x_baseline = jnp.array(baseline_inverse(acq))
 mid_1 = perf_counter()
 
 
@@ -139,7 +137,7 @@ solver_PDHG = PDHG(
 eps = 5e-2
 
 g = eps * 6e-2 * functional.BM3D(is_rgb=True)
-C = linop.Identity(input_shape=input_size)
+C = linop.Identity(input_shape=gt.shape)
 
 rho = 2 * eps * 10**-1
 
@@ -161,7 +159,7 @@ solver_BM3D = ADMM(
 eps = 1e0
 
 g = eps * functional.DnCNN('6M')
-C = linop.Identity(input_shape=input_size)
+C = linop.Identity(input_shape=gt.shape)
 
 rho = 1e-2
 
@@ -181,15 +179,15 @@ solver_DnCNN = ADMM(
 #######################################
 
 mid_2 = perf_counter()
-x_ADMM = np.abs(gt - solver_ADMM.solve())
+x_ADMM = solver_ADMM.solve()
 mid_3 = perf_counter()
-x_LADMM = np.abs(gt - solver_LADMM.solve())
+x_LADMM = solver_LADMM.solve()
 mid_4 = perf_counter()
-x_PDHG = np.abs(gt - solver_PDHG.solve())
+x_PDHG = solver_PDHG.solve()
 mid_5 = perf_counter()
-# x_BM3D = solver_BM3D.solve()
+x_BM3D = solver_BM3D.solve()
 mid_6 = perf_counter()
-x_DnCNN = np.abs(gt - solver_DnCNN.solve())
+x_DnCNN = solver_DnCNN.solve()
 end = perf_counter()
 
 
@@ -210,8 +208,8 @@ ax[1][0].imshow(x_LADMM)
 ax[1][0].set_title(f'TV LADMM: {metric.psnr(gt, x_LADMM):.2f} (dB), {mid_4 - mid_3:.1f}s')
 ax[1][1].imshow(x_PDHG)
 ax[1][1].set_title(f'TV PDHG: {metric.psnr(gt, x_PDHG):.2f} (dB), {mid_5 - mid_4:.1f}s')
-# ax[1][2].imshow(x_BM3D)
-# ax[1][2].set_title(f'BM3D PnP ADMM: {metric.psnr(gt, x_BM3D):.2f} (dB), {mid_6 - mid_5:.1f}s')
+ax[1][2].imshow(x_BM3D)
+ax[1][2].set_title(f'BM3D PnP ADMM: {metric.psnr(gt, x_BM3D):.2f} (dB), {mid_6 - mid_5:.1f}s')
 ax[1][3].imshow(x_DnCNN)
 ax[1][3].set_title(f'DnCNN PnP ADMM: {metric.psnr(gt, x_DnCNN):.2f} (dB), {end - mid_6:.1f}s')
 plt.show()
