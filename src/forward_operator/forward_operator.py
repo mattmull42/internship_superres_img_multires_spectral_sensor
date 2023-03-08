@@ -1,58 +1,46 @@
-from .cfa_operator import *
-from .binning_operator import *
+from .operators.abstract_operator import abstract_operator
 
 
-class forward_operator():
-    def __init__(self, cfa, binning, noise_level, input_size, spectral_stencil):
-        self.cfa = cfa
-        self.binning = binning
-        self.input_size = input_size
-        self.noise_level = noise_level
+class forward_operator(abstract_operator):
+    def __init__(self, operator_list, name=None):
+        self.operator_list = operator_list
+        self.name = 'forward' if name is None else name
 
-        self.cfa_operator = cfa_operator(self.cfa, self.input_size, spectral_stencil)
-
-        if self.binning:
-            self.binning_operator = binning_operator(self.cfa, self.input_size[:2])
-            self.binning_factor = self.binning_operator.l
-            self.output_size = self.binning_operator.P_i, self.binning_operator.P_j
-
-        else:
-            self.output_size = self.input_size[:2]
+        super().__init__(operator_list[0].input_shape, operator_list[-1].output_shape, self.name)
 
 
-    def __call__(self, x):
-        self.output = self.cfa_operator(x)
-        
-        if self.noise_level != 0:
-            self.add_noise()
+    def direct(self, x):
+        res = x
 
-        if self.binning:
-            if self.cfa == 'quad_bayer':
-                self.output = self.binning_operator(self.output)
+        for operator in self.operator_list:
+            res = operator.direct(res)
 
-        return self.output
+        return res
 
 
     def adjoint(self, y):
-        if self.binning:
-            self.adjoint_output = self.cfa_operator.adjoint(self.binning_operator.adjoint(y))
+        res = y
 
-        else:
-            self.adjoint_output = self.cfa_operator.adjoint(y)
+        for operator in reversed(self.operator_list):
+            res = operator.adjoint(res)
 
-        return self.adjoint_output
-
-
-    def add_noise(self):
-        self.output = np.clip(self.output + np.random.normal(0, self.noise_level / 100, self.output.shape), 0, 1)
+        return res
 
 
-    def get_matrix(self):
-        if not hasattr(self, 'matrix'):
-            if self.binning:
-                self.matrix = self.binning_operator.get_matrix() @ self.cfa_operator.get_matrix()
+    @property
+    def matrix(self):
+        mat = self.operator_list[0].matrix
 
-            else:
-                self.matrix = self.cfa_operator.get_matrix()
+        for operator in self.operator_list[1:]:
+            mat = operator.matrix @ mat
 
-        return self.matrix
+        return mat
+
+
+    def __str__(self):
+        res = f'{self.name} operator of {type(self)} from {self.input_shape} to {self.output_shape} with the operators:'
+
+        for operator in self.operator_list:
+            res += '\n   ' + operator.__str__()
+
+        return res

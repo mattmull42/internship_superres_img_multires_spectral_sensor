@@ -1,24 +1,26 @@
 from time import perf_counter
 from colorama import Fore
+import numpy as np
 
-from .forward_operator import *
+from .forward_operator import forward_operator
+from .operators import cfa_operator, binning_operator
 
 
-INPUT_SIZE = (513, 1043, 11)
-SPECTRAL_STENCIL = np.linspace(4400, 6500, INPUT_SIZE[2])
+INPUT_SHAPE = (513, 1043, 11)
+SPECTRAL_STENCIL = np.linspace(4400, 6500, INPUT_SHAPE[2])
 
 
 def run_test(operator, x, y):
-    return np.abs(np.sum(y * operator(x)) - np.sum(operator.adjoint(y) * x)) < 1e-9
+    return np.abs(np.sum(y * operator.direct(x)) - np.sum(operator.adjoint(y) * x)) < 1e-9
 
 
 def cfa_test(cfa):
     start = perf_counter()
 
-    operator = cfa_operator(cfa, INPUT_SIZE, SPECTRAL_STENCIL)
+    operator = cfa_operator(cfa, INPUT_SHAPE, SPECTRAL_STENCIL)
 
-    x = np.random.rand(INPUT_SIZE[0], INPUT_SIZE[1], INPUT_SIZE[2])
-    y = np.random.rand(INPUT_SIZE[0], INPUT_SIZE[1])
+    x = np.random.rand(INPUT_SHAPE[0], INPUT_SHAPE[1], INPUT_SHAPE[2])
+    y = np.random.rand(INPUT_SHAPE[0], INPUT_SHAPE[1])
 
     if run_test(operator, x, y):
         duration = perf_counter() - start
@@ -31,9 +33,9 @@ def cfa_test(cfa):
 def binning_test(cfa):
     start = perf_counter()
 
-    operator = binning_operator(cfa, INPUT_SIZE[:2])
+    operator = binning_operator(cfa, INPUT_SHAPE[:2])
 
-    x = np.random.rand(INPUT_SIZE[0], INPUT_SIZE[1])
+    x = np.random.rand(INPUT_SHAPE[0], INPUT_SHAPE[1])
     y = np.random.rand(operator.P_i, operator.P_j)
 
     if run_test(operator, x, y):
@@ -47,10 +49,14 @@ def binning_test(cfa):
 def forward_test(cfa, binning):
     start = perf_counter()
 
-    operator = forward_operator(cfa, binning, 0, INPUT_SIZE, SPECTRAL_STENCIL)
+    list_op = [cfa_operator(cfa, INPUT_SHAPE, SPECTRAL_STENCIL)]
+    if binning:
+        list_op.append(binning_operator(cfa, list_op[0].output_shape))
 
-    x = np.random.rand(INPUT_SIZE[0], INPUT_SIZE[1], INPUT_SIZE[2])
-    y = np.random.rand(operator.output_size[0],operator.output_size[1])
+    operator = forward_operator(list_op)
+
+    x = np.random.rand(INPUT_SHAPE[0], INPUT_SHAPE[1], INPUT_SHAPE[2])
+    y = np.random.rand(operator.output_shape[0], operator.output_shape[1])
 
     if binning:
         postfix = ' with binning.'

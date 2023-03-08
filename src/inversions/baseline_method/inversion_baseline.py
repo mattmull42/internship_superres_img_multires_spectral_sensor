@@ -2,11 +2,7 @@ from scipy import signal
 from PIL import Image
 
 from .custom_convolution import *
-from src.forward_operator.forward_operator import *
-
-
-def get_indices_rgb(spectral_stencil):
-    return (np.abs(spectral_stencil - 6500)).argmin(), (np.abs(spectral_stencil - 5500)).argmin(), (np.abs(spectral_stencil - 4450)).argmin()
+from src.forward_operator.operators.misc.cfa_masks import *
 
 
 class Inverse_problem:
@@ -15,16 +11,15 @@ class Inverse_problem:
         self.binning = binning
         self.noise_level = noise_level
         self.output_size = output_size
-        self.k_r, self.k_g, self.k_b = get_indices_rgb(spectral_stencil)
 
         if self.cfa == 'bayer':
-            self.cfa_mask = get_bayer_mask(self.output_size, self.k_r, self.k_g, self.k_b)
+            self.cfa_mask = get_bayer_mask(self.output_size, spectral_stencil)
 
         elif self.cfa == 'quad_bayer':
-            self.cfa_mask = get_quad_mask(self.output_size, self.k_r, self.k_g, self.k_b)
+            self.cfa_mask = get_quad_mask(self.output_size, spectral_stencil)
 
         elif self.cfa == 'sparse_3':
-            self.cfa_mask = get_sparse_3_mask(self.output_size, self.k_r, self.k_g, self.k_b)
+            self.cfa_mask = get_sparse_3_mask(self.output_size, spectral_stencil)
 
 
     def __call__(self, image):
