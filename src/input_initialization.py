@@ -4,7 +4,7 @@ import numpy as np
 
 def initialize_input(image_path):
     res = np.array(Image.open(image_path)) / 255
-    spectral_stencil = np.array([6500, 5500, 4450])
+    spectral_stencil = np.array([480, 525, 650])
 
     if res.shape[2] > 3:
         return res[:, :, :3], spectral_stencil

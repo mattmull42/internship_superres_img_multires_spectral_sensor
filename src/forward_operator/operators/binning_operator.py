@@ -1,4 +1,4 @@
-from scipy.sparse import csc_array
+from scipy.sparse import csr_array
 import numpy as np
 from scipy.signal import convolve2d
 
@@ -78,4 +78,4 @@ class binning_operator(abstract_operator):
                 binning_i += [i for _ in range(divider)]
                 binning_data += [1 / divider for _ in range(divider)]
 
-        return csc_array((binning_data, (binning_i, binning_j)), shape=(P_ij, N_ij))
+        return csr_array((binning_data, (binning_i, binning_j)), shape=(P_ij, N_ij))

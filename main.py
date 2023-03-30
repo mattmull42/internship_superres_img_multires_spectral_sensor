@@ -1,60 +1,41 @@
-#!/usr/bin/env python3
-
+import numpy as np
 import matplotlib.pyplot as plt
 
-from src.forward_operator.adjoint_tests import *
-from src.input_initialization import *
-from src.inversions.baseline_method.inversion_baseline import *
-from src.inversions.pyproximal_implementation.admm_pyprox import *
-from src.inversions.pyproximal_implementation.fista_pyprox import *
+from src.forward_operator.forward_operator import forward_operator
+from src.forward_operator.operators import *
 
+from src.input_initialization import initialize_input, initialize_inverse_input
 
-INPUT_DIR = 'input/'
+from os import listdir
+
 
 CFA = 'sparse_3'
 BINNING = CFA == 'quad_bayer'
 NOISE_LEVEL = 0
-MAX_ITER = 300
-EPS = 0.01
-REAL_PIC = False
 
-# run_adjoint_tests()
+# INPUT_DIR = 'input/'
+# x, spectral_stencil = initialize_input(INPUT_DIR + '01690.png')
 
-input_name = '01690'
-x, spectral_stencil = initialize_input(INPUT_DIR + input_name + '.png')
 
-if REAL_PIC:
-    input_name = 'cc'
-    x = initialize_inverse_input(INPUT_DIR + input_name + '.tiff')
-    input_size = np.append(x.shape, 3)
+INPUT_DIR = 'input/balloons_ms/'
+spectral_stencil = np.array([i for i in range(400, 701, 10)])
+x = np.empty((512, 512, 31))
 
-else:
-    input_size = x.shape
+for file in listdir(INPUT_DIR):
+    if file.endswith('.png'):
+        x[:, :, int(file[-6:-4]) - 1] = initialize_inverse_input(INPUT_DIR + file)
 
-forward_op = forward_operator(CFA, BINNING, NOISE_LEVEL, input_size, spectral_stencil)
-baseline_op = Inverse_problem(CFA, BINNING, NOISE_LEVEL, input_size, spectral_stencil)
-admm_op = Inverse_problem_ADMM(CFA, BINNING, NOISE_LEVEL, input_size, spectral_stencil, MAX_ITER, EPS)
-fista_op = Inverse_problem_FISTA(CFA, BINNING, NOISE_LEVEL, input_size, spectral_stencil, MAX_ITER, EPS)
+x /= np.max(x)
 
-if REAL_PIC:
-    acq = x
 
-else:
-    acq = forward_op(x)
+cfa_op = cfa_operator(CFA, x.shape, spectral_stencil, 'WV34bands_Spectral_Responses.npz')
+forward_op = forward_operator([cfa_op])
 
-# res_baseline = baseline_op(acq)
-# res_fista = fista_op(acq)
-# res_admm = admm_op(acq)
+y = forward_op.direct(x)
 
-# fig, ax = plt.subplots(nrows=2, ncols=3, sharex=True, sharey=True)
-# ax[0][0].imshow(x)
-# ax[0][0].set_title('Reference')
-# ax[0][1].imshow(acq, cmap='gray')
-# ax[0][1].set_title(f'Raw image')
-# ax[1][0].imshow(res_baseline)
-# ax[1][0].set_title(f'Baseline')
-# ax[1][1].imshow(res_fista)
-# ax[1][1].set_title(f'FISTA')
-# ax[1][2].imshow(res_admm)
-# ax[1][2].set_title(f'ADMM')
-# plt.show()
+
+fig, axs = plt.subplots(1, 2, sharex=True, sharey=True)
+rgb_window = [np.abs(spectral_stencil - 650).argmin(), np.abs(spectral_stencil - 525).argmin(), np.abs(spectral_stencil - 480).argmin()]
+axs[0].imshow(x[:, :, rgb_window])
+axs[1].imshow(y, cmap='gray')
+plt.show()
